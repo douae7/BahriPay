@@ -18,6 +18,16 @@ interface FishActor {
   baseZ: number;
   phase: number;
   boundsX: number;
+  pitchBias: number;
+  dodgeY: number;
+  speedBoost: number;
+}
+
+interface KelpBlade {
+  pivot: THREE.Group;
+  phase: number;
+  amp: number;
+  speed: number;
 }
 
 interface SceneThemeHandles {
@@ -27,6 +37,7 @@ interface SceneThemeHandles {
   rimLight: THREE.DirectionalLight;
   dustMat: THREE.PointsMaterial;
   bubbleMat: THREE.MeshStandardMaterial;
+  kelpMat: THREE.MeshStandardMaterial;
 }
 
 const LIGHT_OCEAN_BG = 0xd9f4fa;
@@ -67,6 +78,7 @@ export const OceanCanvas3D: React.FC<OceanCanvas3DProps> = ({
       h.dustMat.opacity = 0.25;
       h.bubbleMat.color.setHex(0xffffff);
       h.bubbleMat.opacity = 0.55;
+      h.kelpMat.color.setHex(0x0e7490);
     } else {
       h.hemiLight.color.setHex(0x7ddceb);
       h.hemiLight.groundColor.setHex(0x031524);
@@ -79,6 +91,7 @@ export const OceanCanvas3D: React.FC<OceanCanvas3DProps> = ({
       h.dustMat.opacity = 0.45;
       h.bubbleMat.color.setHex(0xcffafe);
       h.bubbleMat.opacity = 0.42;
+      h.kelpMat.color.setHex(0x14b8a6);
     }
   }, [theme]);
 
@@ -165,7 +178,6 @@ export const OceanCanvas3D: React.FC<OceanCanvas3DProps> = ({
     rimLight.position.set(-8, -4, -6);
     scene.add(rimLight);
 
-    // Shared disposable pools
     const geometriesToDispose: THREE.BufferGeometry[] = [];
     const materialsToDispose: THREE.Material[] = [];
 
@@ -311,6 +323,9 @@ export const OceanCanvas3D: React.FC<OceanCanvas3DProps> = ({
         baseZ: spec.z,
         phase: idx * 1.4,
         boundsX: 14,
+        pitchBias: 0,
+        dodgeY: 0,
+        speedBoost: 1,
       });
     });
 
@@ -338,7 +353,48 @@ export const OceanCanvas3D: React.FC<OceanCanvas3DProps> = ({
     }));
     scene.add(schoolMesh);
 
-    // 8. InstancedMesh 3D Rising Bubbles
+    // 8. 3D Seabed Swaying Kelp Blades (Anchored to ocean floor)
+    const kelpShape = new THREE.Shape();
+    kelpShape.moveTo(-0.18, 0);
+    kelpShape.quadraticCurveTo(-0.28, 1.4, -0.05, 2.8);
+    kelpShape.quadraticCurveTo(0.08, 3.3, 0.0, 3.6);
+    kelpShape.quadraticCurveTo(0.24, 2.1, 0.18, 0);
+    kelpShape.closePath();
+    const kelpGeo = new THREE.ExtrudeGeometry(kelpShape, {
+      depth: 0.04,
+      bevelEnabled: false,
+    });
+    const kelpMat = new THREE.MeshStandardMaterial({
+      color: initialLight ? 0x0e7490 : 0x14b8a6,
+      roughness: 0.65,
+      metalness: 0.08,
+      transparent: true,
+      opacity: 0.45,
+    });
+    geometriesToDispose.push(kelpGeo);
+    materialsToDispose.push(kelpMat);
+
+    const kelpCount = isMobile ? 6 : 12;
+    const kelpBlades: KelpBlade[] = [];
+    for (let i = 0; i < kelpCount; i++) {
+      const pivot = new THREE.Group();
+      const mesh = new THREE.Mesh(kelpGeo, kelpMat);
+      pivot.add(mesh);
+      const isLeft = i % 2 === 0;
+      const xPos = isLeft ? -11.5 + i * 0.7 : 11.5 - (i - 1) * 0.7;
+      pivot.position.set(xPos, -6.9, -2.5 - (i % 4) * 1.4);
+      pivot.scale.setScalar(0.75 + (i % 3) * 0.25);
+      pivot.rotation.y = (i * 0.45) % Math.PI;
+      scene.add(pivot);
+      kelpBlades.push({
+        pivot,
+        phase: i * 0.9,
+        amp: 0.1 + (i % 3) * 0.04,
+        speed: 1.0 + (i % 4) * 0.2,
+      });
+    }
+
+    // 9. InstancedMesh 3D Rising Bubbles
     const bubbleCount = isMobile ? 22 : 46;
     const bubbleGeo = new THREE.SphereGeometry(0.065, 10, 10);
     const bubbleMat = new THREE.MeshStandardMaterial({
@@ -363,7 +419,7 @@ export const OceanCanvas3D: React.FC<OceanCanvas3DProps> = ({
     }));
     scene.add(bubbleMesh);
 
-    // 9. Underwater Floating Dust / Plankton Points
+    // 10. Underwater Floating Dust / Plankton Points
     const dustCount = isMobile ? 70 : 160;
     const dustGeo = new THREE.BufferGeometry();
     const dustPositions = new Float32Array(dustCount * 3);
@@ -392,6 +448,7 @@ export const OceanCanvas3D: React.FC<OceanCanvas3DProps> = ({
       rimLight,
       dustMat,
       bubbleMat,
+      kelpMat,
     };
 
     const handlePointerMove = (e: PointerEvent) => {
@@ -457,29 +514,48 @@ export const OceanCanvas3D: React.FC<OceanCanvas3DProps> = ({
         delta
       );
 
-      camera.position.x = mouseCurrent.current.x * 0.85;
-      camera.position.y = 0.3 + mouseCurrent.current.y * 0.55;
+      camera.position.x = mouseCurrent.current.x * 0.9;
+      camera.position.y = 0.3 + mouseCurrent.current.y * 0.6;
       camera.lookAt(0, 0, -3);
+
+      // Approximate cursor in world plane at fish depth
+      const cursorWorldX = mouseCurrent.current.x * 11;
+      const cursorWorldY = mouseCurrent.current.y * 5.8;
 
       if (!prefersReducedMotion) {
         for (let i = 0; i < actors.length; i++) {
           const f = actors[i];
-          f.group.position.x += f.direction * f.speed * delta;
+          const dx = f.group.position.x - cursorWorldX;
+          const dy = f.group.position.y - cursorWorldY;
+          const distSq = dx * dx + dy * dy;
+
+          // Subtle lifelike cursor reaction: nearby fish bank away & accelerate smoothly
+          const influence = Math.max(0, 1 - distSq / 24);
+          const targetDodgeY = influence * (dy >= 0 ? 1.15 : -1.15);
+          const targetSpeedBoost = 1 + influence * 0.75;
+          const targetPitch = influence * (dy >= 0 ? 0.16 : -0.16) * f.direction;
+
+          f.dodgeY = THREE.MathUtils.damp(f.dodgeY, targetDodgeY, 3.2, delta);
+          f.speedBoost = THREE.MathUtils.damp(f.speedBoost, targetSpeedBoost, 3.5, delta);
+          f.pitchBias = THREE.MathUtils.damp(f.pitchBias, targetPitch, 4.0, delta);
+
+          f.group.position.x += f.direction * f.speed * f.speedBoost * delta;
           if (f.direction === 1 && f.group.position.x > f.boundsX) {
             f.group.position.x = -f.boundsX;
           } else if (f.direction === -1 && f.group.position.x < -f.boundsX) {
             f.group.position.x = f.boundsX;
           }
 
-          f.group.position.y = f.baseY + Math.sin(elapsed * 1.1 + f.phase) * 0.35;
-          f.group.rotation.z = Math.cos(elapsed * 1.1 + f.phase) * 0.04 * f.direction;
-          f.tailPivot.rotation.y = Math.sin(elapsed * 7.5 + f.phase) * 0.38;
+          f.group.position.y = f.baseY + Math.sin(elapsed * 1.1 + f.phase) * 0.35 + f.dodgeY;
+          f.group.rotation.z = Math.cos(elapsed * 1.1 + f.phase) * 0.04 * f.direction + f.pitchBias;
+          f.tailPivot.rotation.y = Math.sin(elapsed * (7.5 * f.speedBoost) + f.phase) * 0.38;
           f.leftFin.rotation.y = Math.sin(elapsed * 4.5 + f.phase) * 0.25;
           f.rightFin.rotation.y = -Math.sin(elapsed * 4.5 + f.phase) * 0.25;
         }
 
         const schoolCenterX = ((elapsed * 1.15) % 28) - 14;
-        const schoolCenterY = Math.sin(elapsed * 0.55) * 1.2 + 1.2;
+        const schoolCenterY =
+          Math.sin(elapsed * 0.55) * 1.2 + 1.2 + mouseCurrent.current.y * 0.45;
         for (let i = 0; i < schoolCount; i++) {
           const o = schoolOffsets[i];
           _dummy.position.set(
@@ -494,12 +570,19 @@ export const OceanCanvas3D: React.FC<OceanCanvas3DProps> = ({
         }
         schoolMesh.instanceMatrix.needsUpdate = true;
 
+        // Sway seabed kelp gently with current + slight cursor drift
+        for (let i = 0; i < kelpBlades.length; i++) {
+          const k = kelpBlades[i];
+          k.pivot.rotation.z =
+            Math.sin(elapsed * k.speed + k.phase) * k.amp + mouseCurrent.current.x * 0.04;
+        }
+
         for (let i = 0; i < bubbleCount; i++) {
           const b = bubblesData[i];
           b.y += b.speed * delta;
           if (b.y > 7.5) b.y = -7.5;
           _dummy.position.set(
-            b.x + Math.sin(elapsed * 1.4 + b.phase) * 0.18,
+            b.x + Math.sin(elapsed * 1.4 + b.phase) * 0.18 + mouseCurrent.current.x * 0.15,
             b.y,
             b.z
           );

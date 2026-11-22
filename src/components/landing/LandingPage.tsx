@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import {
   Anchor,
   ArrowRight,
@@ -18,9 +20,11 @@ import { useMaritime } from '../../context/MaritimeContext';
 import { useTheme } from '../../context/ThemeContext';
 import { BrandLogo } from '../common/BrandLogo';
 import { SafeImage } from '../common/SafeImage';
-import { UnderwaterScene } from '../common/UnderwaterScene';
+import { ForegroundOceanSwimmers, UnderwaterScene } from '../common/UnderwaterScene';
 import { AnimatedNumber, FloatingGlassCard, MagneticButton } from '../common/OceanMotion';
 import { ThemeTogglePill } from '../common/ThemeTogglePill';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const HERO_CIRCULAR_STATS = [
   { label: 'Équipages suivis', target: 142, suffix: '', sub: 'Marins & officiers', pct: 88, delay: '0s' },
@@ -33,6 +37,45 @@ export const LandingPage: React.FC = () => {
   const { setRoute, loginAsRole } = useMaritime();
   const { theme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const ctx = gsap.context(() => {
+      gsap.from('.landing-bento-card', {
+        y: 34,
+        opacity: 0,
+        duration: 0.78,
+        stagger: 0.11,
+        ease: 'power3.out',
+        clearProps: 'transform,opacity',
+        scrollTrigger: {
+          trigger: '#fonctionnalites',
+          start: 'top 78%',
+          once: true,
+        },
+      });
+
+      gsap.from('.landing-arch-item', {
+        y: 28,
+        opacity: 0,
+        duration: 0.75,
+        stagger: 0.14,
+        ease: 'power3.out',
+        clearProps: 'transform,opacity',
+        scrollTrigger: {
+          trigger: '#architecture',
+          start: 'top 80%',
+          once: true,
+        },
+      });
+    }, el);
+
+    return () => ctx.revert();
+  }, []);
 
   const handleExplorePlatform = () => {
     loginAsRole('ARMATEUR');
@@ -41,14 +84,18 @@ export const LandingPage: React.FC = () => {
   return (
     <div
       id="top"
+      ref={rootRef}
       className="min-h-screen bg-[#F2FAFD] dark:bg-[#031624] text-[#062B45] dark:text-[#F8FAFC] transition-colors duration-300 overflow-x-hidden"
     >
       {/* ============================================================
           SECTION 1: CINEMATIC 3D & SVG UNDERWATER HERO (DUAL THEME)
       ============================================================ */}
       <section className="relative min-h-screen flex flex-col justify-between overflow-hidden bg-[#D9F4FA] text-[#062B45] dark:bg-[#041e32] dark:text-[#F8FAFC] transition-colors duration-500">
-        {/* Three.js 3D Ocean + Seaweed + Caustics + SVG Swimmers */}
+        {/* Three.js 3D Ocean + Seaweed + Caustics + Background SVG Swimmers */}
         <UnderwaterScene theme={theme} />
+
+        {/* Foreground SVG Swimmers (z-40) passing gracefully in front of logo & hero headline */}
+        <ForegroundOceanSwimmers theme={theme} />
 
         {/* Transparent 3-Zone Top Navigation (no backdrop-blur over WebGL) */}
         <header className="relative z-30 w-full max-w-7xl mx-auto px-5 sm:px-8 py-5 flex items-center justify-between gap-4 sm:gap-8">
@@ -262,7 +309,7 @@ export const LandingPage: React.FC = () => {
         </div>
 
         {/* Animated Scroll Down Indicator */}
-        <div className="relative z-30 pb-6 flex flex-col items-center justify-center">
+        <div className="relative z-30 pb-10 flex flex-col items-center justify-center">
           <a
             href="#fonctionnalites"
             className="flex flex-col items-center gap-1.5 text-xs font-semibold text-[#062B45]/80 dark:text-[#7DDCEB]/90 hover:text-[#16C5C0] dark:hover:text-[#F8FAFC] transition-colors"
@@ -275,6 +322,20 @@ export const LandingPage: React.FC = () => {
               <ChevronDown className="w-5 h-5 text-[#0A4565] dark:text-[#16C5C0]" />
             </motion.span>
           </a>
+        </div>
+
+        {/* Animated Ocean Wave Divider */}
+        <div className="pointer-events-none absolute bottom-0 inset-x-0 z-30 overflow-hidden leading-none" aria-hidden="true">
+          <svg
+            viewBox="0 0 1440 84"
+            preserveAspectRatio="none"
+            className="w-[112%] h-10 sm:h-14 ocean-wave"
+          >
+            <path
+              d="M0,42 C240,78 480,10 720,42 C960,74 1200,12 1440,42 L1440,84 L0,84 Z"
+              className="fill-[#F2FAFD] dark:fill-[#031624] transition-colors duration-300"
+            />
+          </svg>
         </div>
       </section>
 
@@ -302,7 +363,7 @@ export const LandingPage: React.FC = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Feature 01 - Wide Floating Card */}
-          <FloatingGlassCard className="lg:col-span-2 overflow-hidden flex flex-col md:flex-row p-0">
+          <FloatingGlassCard className="landing-bento-card lg:col-span-2 overflow-hidden flex flex-col md:flex-row p-0">
             <div className="p-7 sm:p-8 flex-1 flex flex-col justify-between">
               <div>
                 <div className="flex items-center gap-2.5 text-sm font-semibold text-[#16C5C0] mb-3">
@@ -334,7 +395,7 @@ export const LandingPage: React.FC = () => {
           </FloatingGlassCard>
 
           {/* Feature 02 */}
-          <FloatingGlassCard delay={0.08} className="p-7 sm:p-8 flex flex-col justify-between">
+          <FloatingGlassCard delay={0.08} className="landing-bento-card p-7 sm:p-8 flex flex-col justify-between">
             <div>
               <div className="w-11 h-11 rounded-2xl bg-[#16C5C0]/15 text-[#16C5C0] flex items-center justify-center mb-5 float-gentle">
                 <Users className="w-5 h-5" />
@@ -360,7 +421,7 @@ export const LandingPage: React.FC = () => {
           </FloatingGlassCard>
 
           {/* Feature 03 */}
-          <FloatingGlassCard delay={0.12} className="p-7 sm:p-8 flex flex-col justify-between">
+          <FloatingGlassCard delay={0.12} className="landing-bento-card p-7 sm:p-8 flex flex-col justify-between">
             <div>
               <div className="w-11 h-11 rounded-2xl bg-[#0A4565]/10 dark:bg-[#7DDCEB]/15 text-[#0A4565] dark:text-[#7DDCEB] flex items-center justify-center mb-5 float-gentle">
                 <Wallet className="w-5 h-5" />
@@ -384,7 +445,7 @@ export const LandingPage: React.FC = () => {
           {/* Feature 04 - Ocean AI */}
           <FloatingGlassCard
             delay={0.16}
-            className="lg:col-span-2 overflow-hidden !bg-gradient-to-br !from-[#062B45] !via-[#0A4565] !to-[#083B57] text-[#F8FAFC] !border-[#16C5C0]/35 flex flex-col md:flex-row p-0"
+            className="landing-bento-card lg:col-span-2 overflow-hidden !bg-gradient-to-br !from-[#062B45] !via-[#0A4565] !to-[#083B57] text-[#F8FAFC] !border-[#16C5C0]/35 flex flex-col md:flex-row p-0"
           >
             <div id="ocean-ai" className="p-7 sm:p-8 flex-1 flex flex-col justify-between">
               <div>
@@ -432,7 +493,7 @@ export const LandingPage: React.FC = () => {
         className="border-y border-[#0A4565]/10 dark:border-[#7DDCEB]/10 bg-white/75 dark:bg-[#062439]/55 backdrop-blur-lg py-16 sm:py-20"
       >
         <div id="architecture" className="max-w-7xl mx-auto px-5 sm:px-8 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-          <div className="lg:col-span-6">
+          <div className="landing-arch-item lg:col-span-6">
             <p className="text-sm font-semibold text-[#16C5C0] mb-2">
               Architecture &amp; Sécurité
             </p>
@@ -464,7 +525,7 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          <FloatingGlassCard className="lg:col-span-6 p-6 sm:p-8 !bg-[#062B45] text-[#F8FAFC] !border-[#16C5C0]/30">
+          <FloatingGlassCard className="landing-arch-item lg:col-span-6 p-6 sm:p-8 !bg-[#062B45] text-[#F8FAFC] !border-[#16C5C0]/30">
             <h3 className="font-display font-semibold text-lg text-[#7DDCEB] mb-2">
               Accès direct par rôle métier
             </h3>

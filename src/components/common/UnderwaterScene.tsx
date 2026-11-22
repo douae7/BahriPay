@@ -384,33 +384,24 @@ export const UnderwaterScene: React.FC<{ theme?: 'light' | 'dark' }> = ({
           />
         ))}
 
-        {FISH_SWARM.map((fish) => {
-          const zClass =
-            fish.layer === 'fg'
-              ? isLight
-                ? 'z-30 drop-shadow-[0_10px_18px_rgba(6,43,69,0.22)]'
-                : 'z-30 drop-shadow-[0_10px_20px_rgba(3,21,36,0.5)]'
-              : 'z-10 opacity-85';
-          const mobileHide = fish.layer === 'mg' ? 'hidden md:block' : '';
-          return (
-            <div
-              key={fish.id}
-              className={`absolute left-0 ${zClass} ${mobileHide} ${
-                fish.direction === 'ltr' ? 'fish-swim-ltr' : 'fish-swim-rtl'
-              }`}
-              style={{
-                top: fish.top,
-                ['--swim-duration' as string]: fish.duration,
-                ['--swim-delay' as string]: fish.delay,
-                ['--fish-opacity' as string]: fish.opacity,
-              }}
-            >
-              <div style={{ transform: `scale(${fish.scale})` }}>
-                <FishIllustration spec={fish} />
-              </div>
+        {FISH_SWARM.filter((fish) => fish.layer !== 'fg').map((fish) => (
+          <div
+            key={fish.id}
+            className={`hidden md:block absolute left-0 z-10 opacity-85 ${
+              fish.direction === 'ltr' ? 'fish-swim-ltr' : 'fish-swim-rtl'
+            }`}
+            style={{
+              top: fish.top,
+              ['--swim-duration' as string]: fish.duration,
+              ['--swim-delay' as string]: fish.delay,
+              ['--fish-opacity' as string]: fish.opacity,
+            }}
+          >
+            <div style={{ transform: `scale(${fish.scale})` }}>
+              <FishIllustration spec={fish} />
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
 
       {/* Soft depth vignette */}
@@ -422,6 +413,59 @@ export const UnderwaterScene: React.FC<{ theme?: 'light' | 'dark' }> = ({
             : 'radial-gradient(circle at 50% 45%, transparent 38%, rgba(3, 21, 36, 0.52) 100%)',
         }}
       />
+    </div>
+  );
+};
+
+/* ============================================================
+   Foreground Swimmers (z-40) — Glide gracefully IN FRONT OF logo & headline
+============================================================ */
+export const ForegroundOceanSwimmers: React.FC<{ theme?: 'light' | 'dark' }> = ({
+  theme = 'dark',
+}) => {
+  const isLight = theme === 'light';
+  const fgRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = fgRef.current;
+    if (!el) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const onMove = (e: PointerEvent) => {
+      const nx = (e.clientX / window.innerWidth - 0.5) * 28;
+      const ny = (e.clientY / window.innerHeight - 0.5) * 18;
+      el.style.transform = `translate3d(${-nx}px, ${-ny}px, 0)`;
+    };
+    window.addEventListener('pointermove', onMove, { passive: true });
+    return () => window.removeEventListener('pointermove', onMove);
+  }, []);
+
+  return (
+    <div
+      ref={fgRef}
+      className="pointer-events-none absolute inset-0 z-40 overflow-hidden select-none transition-transform duration-200 ease-out"
+      aria-hidden="true"
+    >
+      {FISH_SWARM.filter((fish) => fish.layer === 'fg').map((fish, idx) => (
+        <div
+          key={fish.id}
+          className={`${idx === 2 ? 'hidden sm:block' : ''} absolute left-0 ${
+            isLight
+              ? 'drop-shadow-[0_12px_20px_rgba(6,43,69,0.22)]'
+              : 'drop-shadow-[0_12px_24px_rgba(2,14,24,0.55)]'
+          } ${fish.direction === 'ltr' ? 'fish-swim-ltr' : 'fish-swim-rtl'}`}
+          style={{
+            top: fish.top,
+            ['--swim-duration' as string]: fish.duration,
+            ['--swim-delay' as string]: fish.delay,
+            ['--fish-opacity' as string]: fish.opacity,
+          }}
+        >
+          <div style={{ transform: `scale(${fish.scale})` }}>
+            <FishIllustration spec={fish} />
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

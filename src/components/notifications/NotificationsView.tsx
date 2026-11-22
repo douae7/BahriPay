@@ -132,7 +132,7 @@ export const NotificationsView: React.FC = () => {
                     >
                       <Icon className="w-5 h-5" />
                       {!n.read && (
-                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#16C5C0] shadow-[0_0_10px_rgba(22,197,192,0.9)] animate-pulse" />
+                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#16C5C0] shadow-[0_0_8px_rgba(22,197,192,0.85)]" />
                       )}
                     </div>
                     <div>

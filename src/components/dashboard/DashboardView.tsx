@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
+import gsap from 'gsap';
 import {
   Area,
   AreaChart,
@@ -52,6 +53,26 @@ export const DashboardView: React.FC = () => {
   const { theme } = useTheme();
   const [range, setRange] = useState<'3m' | '6m' | '12m'>('12m');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const dashboardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = dashboardRef.current;
+    if (!el) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const ctx = gsap.context(() => {
+      gsap.from('.dashboard-float-panel', {
+        y: 22,
+        opacity: 0,
+        duration: 0.68,
+        stagger: 0.08,
+        ease: 'power3.out',
+        clearProps: 'transform,opacity',
+      });
+    }, el);
+
+    return () => ctx.revert();
+  }, []);
 
   const filteredSeries = useMemo(() => {
     if (range === '3m') return monthlySeries.slice(-3);
@@ -164,9 +185,9 @@ export const DashboardView: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6 sm:space-y-7">
+    <div ref={dashboardRef} className="space-y-6 sm:space-y-7">
       {/* Header Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="dashboard-float-panel flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-display font-bold text-2xl sm:text-3xl tracking-tight text-[#062B45] dark:text-[#F8FAFC]">
             Centre de contrôle Bahripay
@@ -212,7 +233,7 @@ export const DashboardView: React.FC = () => {
       {/* Maritime Command Quick-Action Dock */}
       <FloatingGlassCard
         tiltEnabled={false}
-        className="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-gradient-to-r from-white/85 via-[#E8F8FC]/85 to-white/85 dark:from-[#062B45]/85 dark:via-[#0A4565]/75 dark:to-[#062B45]/85"
+        className="dashboard-float-panel p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-gradient-to-r from-white/85 via-[#E8F8FC]/85 to-white/85 dark:from-[#062B45]/85 dark:via-[#0A4565]/75 dark:to-[#062B45]/85"
       >
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-2xl bg-[#16C5C0]/18 border border-[#16C5C0]/35 flex items-center justify-center text-[#16C5C0] shrink-0">
@@ -266,7 +287,7 @@ export const DashboardView: React.FC = () => {
       </FloatingGlassCard>
 
       {/* Floating Circular Ocean Gauges */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <section className="dashboard-float-panel grid grid-cols-1 md:grid-cols-3 gap-4">
         <FloatingCircularStat
           label="Marge nette armement"
           valueText={formatEuro(kpis.netProfit)}
@@ -291,7 +312,7 @@ export const DashboardView: React.FC = () => {
       </section>
 
       {/* 8 Floating Glass KPI Cards with 3D Hover Tilt & Animated Counters */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <section className="dashboard-float-panel grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpiCards.map((card, idx) => {
           const Icon = card.icon;
           return (
@@ -335,7 +356,7 @@ export const DashboardView: React.FC = () => {
       </section>
 
       {/* Main Charts Row */}
-      <section className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+      <section className="dashboard-float-panel grid grid-cols-1 xl:grid-cols-12 gap-6">
         <FloatingGlassCard tiltEnabled={false} className="xl:col-span-7 p-5 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
             <div>
@@ -457,7 +478,7 @@ export const DashboardView: React.FC = () => {
       </section>
 
       {/* Bottom Operational Row */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <section className="dashboard-float-panel grid grid-cols-1 lg:grid-cols-12 gap-6">
         <FloatingGlassCard tiltEnabled={false} className="lg:col-span-4 p-5 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display font-semibold text-base sm:text-lg">

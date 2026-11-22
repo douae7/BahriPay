@@ -54,6 +54,10 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
     notifications,
     markNotificationRead,
     resetDemoData,
+    isLoading,
+    apiError,
+    apiSuccess,
+    clearApiFeedback,
   } = useMaritime();
 
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -373,6 +377,31 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
         {/* Scrollable Workspace Content */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-20 md:pb-8 max-w-[1440px] w-full mx-auto">
+          {(isLoading || apiError || apiSuccess) && (
+            <div className="no-print mb-4 flex flex-col gap-2">
+              {isLoading && (
+                <div className="px-4 py-2 rounded-xl bg-white/75 dark:bg-[#062439]/80 backdrop-blur-lg border border-[#16C5C0]/30 text-xs text-[#0A4565] dark:text-[#7DDCEB]">
+                  Synchronisation avec le serveur Spring Boot en cours...
+                </div>
+              )}
+              {apiError && (
+                <div className="px-4 py-2.5 rounded-xl bg-amber-500/12 border border-amber-500/35 text-xs text-[#062B45] dark:text-amber-200 flex items-center justify-between gap-3">
+                  <span>{apiError}</span>
+                  <button type="button" onClick={clearApiFeedback} className="font-semibold underline cursor-pointer">
+                    Fermer
+                  </button>
+                </div>
+              )}
+              {apiSuccess && (
+                <div className="px-4 py-2.5 rounded-xl bg-emerald-500/12 border border-emerald-500/35 text-xs text-emerald-800 dark:text-emerald-200 flex items-center justify-between gap-3">
+                  <span>{apiSuccess}</span>
+                  <button type="button" onClick={clearApiFeedback} className="font-semibold underline cursor-pointer">
+                    OK
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
           {children}
         </main>
 

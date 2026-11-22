@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   DEMO_USERS,
   HISTORICAL_MONTHLY_SERIES,
@@ -11,6 +11,19 @@ import {
   INITIAL_TRIPS,
   INITIAL_VESSELS,
 } from '../data/demoData';
+import {
+  authApi,
+  dashboardApi,
+  DashboardSummaryDTO,
+  extractApiErrorMessage,
+  financesApi,
+  flotteApi,
+  isNetworkUnreachableError,
+  mapBackendUser,
+  marinsApi,
+  notificationsApi,
+  tokenStorage,
+} from '../services/apiClient';
 import {
   AppNotification,
   AppRoute,
@@ -33,8 +46,18 @@ interface MaritimeContextValue {
   setRoute: (route: AppRoute) => void;
   currentUser: UserAccount;
   isAuthenticated: boolean;
+  backendConnected: boolean;
+  isLoading: boolean;
+  apiError: string | null;
+  apiSuccess: string | null;
+  clearApiFeedback: () => void;
+
+  loginWithCredentials: (email: string, password: string, fallbackRole?: UserRole) => Promise<void>;
+  registerAccount: (fullName: string, email: string, password: string, role: UserRole) => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<string>;
   loginAsRole: (role: UserRole, customEmail?: string, customName?: string) => void;
   logout: () => void;
+  refreshWorkspaceData: () => Promise<void>;
 
   sailors: Sailor[];
   addSailor: (sailor: Omit<Sailor, 'id'>) => void;
@@ -88,6 +111,10 @@ const MaritimeContext = createContext<MaritimeContextValue | undefined>(undefine
 export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [route, setRoute] = useState<AppRoute>('landing');
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [backendConnected, setBackendConnected] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [apiSuccess, setApiSuccess] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<UserAccount>(DEMO_USERS.ARMATEUR);
 
   const [sailors, setSailors] = useState<Sailor[]>(INITIAL_SAILORS);
@@ -95,35 +122,264 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [trips, setTrips] = useState<FishingTrip[]>(INITIAL_TRIPS);
   const [sales, setSales] = useState<SaleRecord[]>(INITIAL_SALES);
   const [expenses, setExpenses] = useState<ExpenseRecord[]>(INITIAL_EXPENSES);
-  const [shareRule, setShareRule] = useState<ShareRuleConfig>(INITIAL_SHARE_RULE);
+  const [shareRule, setShareRuleState] = useState<ShareRuleConfig>(INITIAL_SHARE_RULE);
   const [payments, setPayments] = useState<PaymentRecord[]>(INITIAL_PAYMENTS);
   const [notifications, setNotifications] = useState<AppNotification[]>(INITIAL_NOTIFICATIONS);
+  const [dashboardSummary, setDashboardSummary] = useState<DashboardSummaryDTO | null>(null);
 
-  const loginAsRole = (role: UserRole, customEmail?: string, customName?: string) => {
-    const base = DEMO_USERS[role];
-    setCurrentUser({
-      ...base,
-      email: customEmail || base.email,
-      fullName: customName || base.fullName,
-      avatarInitials: customName
-        ? customName
+  const shareRuleTimerRef = useRef<number | null>(null);
+
+  const clearApiFeedback = useCallback(() => {
+    setApiError(null);
+    setApiSuccess(null);
+  }, []);
+
+  const showSuccess = useCallback((msg: string) => {
+    setApiError(null);
+    setApiSuccess(msg);
+    window.setTimeout(() => {
+      setApiSuccess((curr) => (curr === msg ? null : curr));
+    }, 3500);
+  }, []);
+
+  const refreshWorkspaceData = useCallback(async () => {
+    if (!tokenStorage.getToken()) return;
+    setIsLoading(true);
+    try {
+      const [
+        sailorsRes,
+        vesselsRes,
+        tripsRes,
+        salesRes,
+        expensesRes,
+        ruleRes,
+        paymentsRes,
+        notifsRes,
+        summaryRes,
+      ] = await Promise.all([
+        marinsApi.list(),
+        flotteApi.listVessels(),
+        flotteApi.listTrips(),
+        financesApi.listSales(),
+        financesApi.listExpenses(),
+        financesApi.getShareRule(),
+        financesApi.listPayments(),
+        notificationsApi.list(),
+        dashboardApi.getSummary(),
+      ]);
+
+      setSailors(sailorsRes);
+      setVessels(vesselsRes);
+      setTrips(tripsRes);
+      setSales(salesRes);
+      setExpenses(expensesRes);
+      setShareRuleState(ruleRes);
+      setPayments(paymentsRes);
+      setNotifications(notifsRes);
+      setDashboardSummary(summaryRes);
+      setBackendConnected(true);
+      setApiError(null);
+    } catch (err) {
+      if (isNetworkUnreachableError(err)) {
+        setBackendConnected(false);
+      } else {
+        setApiError(extractApiErrorMessage(err));
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Restore active JWT session on mount if token exists
+  useEffect(() => {
+    const token = tokenStorage.getToken();
+    if (!token) return;
+    let active = true;
+    (async () => {
+      try {
+        const user = await authApi.me();
+        if (!active) return;
+        setCurrentUser(user);
+        setIsAuthenticated(true);
+        await refreshWorkspaceData();
+      } catch {
+        tokenStorage.clear();
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [refreshWorkspaceData]);
+
+  const loginWithCredentials = async (email: string, password: string, fallbackRole: UserRole = 'ARMATEUR') => {
+    setIsLoading(true);
+    setApiError(null);
+    try {
+      const res = await authApi.login(email, password);
+      tokenStorage.setTokens(res.token, res.refreshToken);
+      setCurrentUser(mapBackendUser(res.user));
+      setIsAuthenticated(true);
+      setBackendConnected(true);
+      await refreshWorkspaceData();
+      setRoute('dashboard');
+    } catch (err) {
+      if (isNetworkUnreachableError(err)) {
+        // Backend Spring Boot non démarré dans cet environnement : bascule gracieuse en aperçu local tout en signalant l'état
+        const base = DEMO_USERS[fallbackRole];
+        setCurrentUser({ ...base, email: email || base.email });
+        setIsAuthenticated(true);
+        setBackendConnected(false);
+        setApiError('API Spring Boot non détectée sur localhost:8080 — session ouverte en mode aperçu local.');
+        setRoute('dashboard');
+        return;
+      }
+      const message = extractApiErrorMessage(err);
+      setApiError(message);
+      throw new Error(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const registerAccount = async (fullName: string, email: string, password: string, role: UserRole) => {
+    setIsLoading(true);
+    setApiError(null);
+    try {
+      const res = await authApi.register({ fullName, email, password, role });
+      tokenStorage.setTokens(res.token, res.refreshToken);
+      setCurrentUser(mapBackendUser(res.user));
+      setIsAuthenticated(true);
+      setBackendConnected(true);
+      await refreshWorkspaceData();
+      setRoute('dashboard');
+      showSuccess('Compte créé et enregistré dans MySQL.');
+    } catch (err) {
+      if (isNetworkUnreachableError(err)) {
+        const base = DEMO_USERS[role];
+        setCurrentUser({
+          ...base,
+          fullName,
+          email,
+          avatarInitials: fullName
             .split(' ')
             .map((p) => p[0])
             .join('')
             .slice(0, 2)
-            .toUpperCase()
-        : base.avatarInitials,
-    });
-    setIsAuthenticated(true);
-    setRoute('dashboard');
+            .toUpperCase(),
+        });
+        setIsAuthenticated(true);
+        setBackendConnected(false);
+        setApiError('API Spring Boot non détectée sur localhost:8080 — compte simulé localement.');
+        setRoute('dashboard');
+        return;
+      }
+      const message = extractApiErrorMessage(err);
+      setApiError(message);
+      throw new Error(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const requestPasswordReset = async (email: string): Promise<string> => {
+    setIsLoading(true);
+    setApiError(null);
+    try {
+      const res = await authApi.forgotPassword(email);
+      return res.message;
+    } catch (err) {
+      if (isNetworkUnreachableError(err)) {
+        return `Un lien de réinitialisation sécurisé vient d’être préparé pour ${email} (mode aperçu hors-ligne).`;
+      }
+      const message = extractApiErrorMessage(err);
+      setApiError(message);
+      throw new Error(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loginAsRole = (role: UserRole, customEmail?: string, customName?: string) => {
+    const base = DEMO_USERS[role];
+    const applyLocalFallback = () => {
+      setCurrentUser({
+        ...base,
+        email: customEmail || base.email,
+        fullName: customName || base.fullName,
+        avatarInitials: customName
+          ? customName
+              .split(' ')
+              .map((p) => p[0])
+              .join('')
+              .slice(0, 2)
+              .toUpperCase()
+          : base.avatarInitials,
+      });
+      setIsAuthenticated(true);
+      setRoute('dashboard');
+    };
+
+    void (async () => {
+      setIsLoading(true);
+      try {
+        const res = await authApi.demoLogin({ role });
+        tokenStorage.setTokens(res.token, res.refreshToken);
+        setCurrentUser(mapBackendUser(res.user));
+        setIsAuthenticated(true);
+        setBackendConnected(true);
+        await refreshWorkspaceData();
+        setRoute('dashboard');
+      } catch {
+        setBackendConnected(false);
+        applyLocalFallback();
+      } finally {
+        setIsLoading(false);
+      }
+    })();
   };
 
   const logout = () => {
+    const token = tokenStorage.getToken();
+    if (token) {
+      void authApi.logout().catch(() => {});
+    }
+    tokenStorage.clear();
+    setBackendConnected(false);
     setIsAuthenticated(false);
+    setDashboardSummary(null);
+    setApiError(null);
+    setApiSuccess(null);
     setRoute('landing');
   };
 
+  const syncDashboardSummary = useCallback(async () => {
+    if (!tokenStorage.getToken()) return;
+    try {
+      const summary = await dashboardApi.getSummary();
+      setDashboardSummary(summary);
+    } catch {
+      // Fallback to computed local summary when unreachable
+    }
+  }, []);
+
   const addSailor = (sailorData: Omit<Sailor, 'id'>) => {
+    if (backendConnected && tokenStorage.getToken()) {
+      void (async () => {
+        setIsLoading(true);
+        try {
+          const created = await marinsApi.create(sailorData);
+          setSailors((prev) => [created, ...prev]);
+          await syncDashboardSummary();
+          showSuccess(`Marin ${created.firstName} ${created.lastName} enregistré en base MySQL.`);
+        } catch (err) {
+          setApiError(extractApiErrorMessage(err));
+        } finally {
+          setIsLoading(false);
+        }
+      })();
+      return;
+    }
+
     const newSailor: Sailor = {
       ...sailorData,
       id: `sai-${Date.now()}`,
@@ -132,14 +388,67 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const updateSailor = (updated: Sailor) => {
+    if (backendConnected && tokenStorage.getToken()) {
+      void (async () => {
+        setIsLoading(true);
+        try {
+          const saved = await marinsApi.update(updated);
+          setSailors((prev) => prev.map((s) => (s.id === saved.id ? saved : s)));
+          showSuccess(`Fiche de ${saved.firstName} ${saved.lastName} mise à jour.`);
+        } catch (err) {
+          setApiError(extractApiErrorMessage(err));
+        } finally {
+          setIsLoading(false);
+        }
+      })();
+      return;
+    }
+
     setSailors((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
   };
 
   const deleteSailor = (id: string) => {
+    if (backendConnected && tokenStorage.getToken()) {
+      void (async () => {
+        setIsLoading(true);
+        try {
+          await marinsApi.delete(id);
+          setSailors((prev) => prev.filter((s) => s.id !== id));
+          await syncDashboardSummary();
+          showSuccess('Marin supprimé de la base de données.');
+        } catch (err) {
+          setApiError(extractApiErrorMessage(err));
+        } finally {
+          setIsLoading(false);
+        }
+      })();
+      return;
+    }
+
     setSailors((prev) => prev.filter((s) => s.id !== id));
   };
 
   const addSailorAbsence = (sailorId: string, absence: Omit<SailorAbsence, 'id'>) => {
+    if (backendConnected && tokenStorage.getToken()) {
+      void (async () => {
+        setIsLoading(true);
+        try {
+          const created = await marinsApi.createAbsence(sailorId, absence);
+          setSailors((prev) =>
+            prev.map((s) =>
+              s.id === sailorId ? { ...s, absences: [created, ...s.absences] } : s
+            )
+          );
+          showSuccess('Absence enregistrée.');
+        } catch (err) {
+          setApiError(extractApiErrorMessage(err));
+        } finally {
+          setIsLoading(false);
+        }
+      })();
+      return;
+    }
+
     setSailors((prev) =>
       prev.map((s) =>
         s.id === sailorId
@@ -154,6 +463,29 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     docId: string,
     status: SailorDocument['status']
   ) => {
+    if (backendConnected && tokenStorage.getToken()) {
+      void (async () => {
+        try {
+          const updatedDoc = await marinsApi.updateDocumentStatus(docId, status);
+          setSailors((prev) =>
+            prev.map((s) =>
+              s.id === sailorId
+                ? {
+                    ...s,
+                    documents: s.documents.map((d) =>
+                      d.id === docId ? { ...d, status: updatedDoc.status } : d
+                    ),
+                  }
+                : s
+            )
+          );
+        } catch (err) {
+          setApiError(extractApiErrorMessage(err));
+        }
+      })();
+      return;
+    }
+
     setSailors((prev) =>
       prev.map((s) =>
         s.id === sailorId
@@ -167,6 +499,26 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const addVessel = (vesselData: Omit<Vessel, 'id'>) => {
+    if (backendConnected && tokenStorage.getToken()) {
+      void (async () => {
+        setIsLoading(true);
+        try {
+          const created = await flotteApi.createVessel({
+            ...vesselData,
+            imageUrl: '/src/assets/images/vessel_trawler_hero_1795370246302.jpg',
+          });
+          setVessels((prev) => [created, ...prev]);
+          await syncDashboardSummary();
+          showSuccess(`Navire ${created.name} ajouté à la flotte.`);
+        } catch (err) {
+          setApiError(extractApiErrorMessage(err));
+        } finally {
+          setIsLoading(false);
+        }
+      })();
+      return;
+    }
+
     const newVessel: Vessel = {
       ...vesselData,
       id: `ves-${Date.now()}`,
@@ -176,10 +528,39 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const updateVessel = (updated: Vessel) => {
+    if (backendConnected && tokenStorage.getToken()) {
+      void (async () => {
+        try {
+          const saved = await flotteApi.updateVessel(updated);
+          setVessels((prev) => prev.map((v) => (v.id === saved.id ? saved : v)));
+          await syncDashboardSummary();
+        } catch (err) {
+          setApiError(extractApiErrorMessage(err));
+        }
+      })();
+      return;
+    }
+
     setVessels((prev) => prev.map((v) => (v.id === updated.id ? updated : v)));
   };
 
   const addTrip = (tripData: Omit<FishingTrip, 'id' | 'code'>) => {
+    if (backendConnected && tokenStorage.getToken()) {
+      void (async () => {
+        setIsLoading(true);
+        try {
+          await flotteApi.createTrip(tripData);
+          await refreshWorkspaceData();
+          showSuccess('Sortie de pêche enregistrée et synchronisée.');
+        } catch (err) {
+          setApiError(extractApiErrorMessage(err));
+        } finally {
+          setIsLoading(false);
+        }
+      })();
+      return;
+    }
+
     const nextNum = 114 + trips.length;
     const newTripId = `trp-${Date.now()}`;
     const newTrip: FishingTrip = {
@@ -189,7 +570,6 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
     setTrips((prev) => [newTrip, ...prev]);
 
-    // Auto-create sales entries if catches exist and trip is completed
     if (tripData.status === 'Terminée' && tripData.catches.length > 0) {
       const autoSales: SaleRecord[] = tripData.catches.map((c, idx) => ({
         id: `sal-${Date.now()}-${idx}`,
@@ -222,10 +602,41 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const updateTripStatus = (tripId: string, status: FishingTrip['status']) => {
+    if (backendConnected && tokenStorage.getToken()) {
+      void (async () => {
+        try {
+          const updated = await flotteApi.updateTripStatus(tripId, status);
+          setTrips((prev) => prev.map((t) => (t.id === tripId ? updated : t)));
+          await syncDashboardSummary();
+          showSuccess(`Statut de la sortie ${updated.code} mis à jour.`);
+        } catch (err) {
+          setApiError(extractApiErrorMessage(err));
+        }
+      })();
+      return;
+    }
+
     setTrips((prev) => prev.map((t) => (t.id === tripId ? { ...t, status } : t)));
   };
 
   const addSale = (saleData: Omit<SaleRecord, 'id' | 'totalAmount'>) => {
+    if (backendConnected && tokenStorage.getToken()) {
+      void (async () => {
+        setIsLoading(true);
+        try {
+          const created = await financesApi.createSale(saleData);
+          setSales((prev) => [created, ...prev]);
+          await syncDashboardSummary();
+          showSuccess('Vente enregistrée en base MySQL.');
+        } catch (err) {
+          setApiError(extractApiErrorMessage(err));
+        } finally {
+          setIsLoading(false);
+        }
+      })();
+      return;
+    }
+
     const totalAmount = Math.round(saleData.quantityKg * saleData.pricePerKg * 100) / 100;
     const newSale: SaleRecord = {
       ...saleData,
@@ -236,6 +647,23 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const addExpense = (expenseData: Omit<ExpenseRecord, 'id'>) => {
+    if (backendConnected && tokenStorage.getToken()) {
+      void (async () => {
+        setIsLoading(true);
+        try {
+          const created = await financesApi.createExpense(expenseData);
+          setExpenses((prev) => [created, ...prev]);
+          await syncDashboardSummary();
+          showSuccess('Dépense enregistrée en base MySQL.');
+        } catch (err) {
+          setApiError(extractApiErrorMessage(err));
+        } finally {
+          setIsLoading(false);
+        }
+      })();
+      return;
+    }
+
     const newExpense: ExpenseRecord = {
       ...expenseData,
       id: `exp-${Date.now()}`,
@@ -243,7 +671,45 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setExpenses((prev) => [newExpense, ...prev]);
   };
 
+  const setShareRule = (rule: ShareRuleConfig) => {
+    setShareRuleState(rule);
+    if (backendConnected && tokenStorage.getToken()) {
+      if (shareRuleTimerRef.current) {
+        window.clearTimeout(shareRuleTimerRef.current);
+      }
+      shareRuleTimerRef.current = window.setTimeout(() => {
+        if (Math.round(rule.boatSharePercent + rule.crewSharePercent) !== 100) return;
+        void (async () => {
+          try {
+            const saved = await financesApi.updateShareRule(rule);
+            setShareRuleState(saved);
+            showSuccess('Règle de répartition sauvegardée en base MySQL.');
+          } catch (err) {
+            setApiError(extractApiErrorMessage(err));
+          }
+        })();
+      }, 350);
+    }
+  };
+
   const markPaymentPaid = (paymentId: string) => {
+    if (backendConnected && tokenStorage.getToken()) {
+      void (async () => {
+        setIsLoading(true);
+        try {
+          const updated = await financesApi.markPaymentPaid(paymentId);
+          setPayments((prev) => prev.map((p) => (p.id === paymentId ? updated : p)));
+          await syncDashboardSummary();
+          showSuccess('Paiement validé et marqué comme réglé.');
+        } catch (err) {
+          setApiError(extractApiErrorMessage(err));
+        } finally {
+          setIsLoading(false);
+        }
+      })();
+      return;
+    }
+
     const today = new Date().toISOString().slice(0, 10);
     setPayments((prev) =>
       prev.map((p) => (p.id === paymentId ? { ...p, status: 'Payé', paidAt: today } : p))
@@ -251,9 +717,25 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const generateTripPayments = (tripId: string) => {
+    if (backendConnected && tokenStorage.getToken()) {
+      void (async () => {
+        setIsLoading(true);
+        try {
+          const createdList = await financesApi.generateTripPayments(tripId);
+          setPayments((prev) => [...createdList, ...prev]);
+          await syncDashboardSummary();
+          showSuccess(`${createdList.length} fiches de paie générées depuis la règle MySQL.`);
+        } catch (err) {
+          setApiError(extractApiErrorMessage(err));
+        } finally {
+          setIsLoading(false);
+        }
+      })();
+      return;
+    }
+
     const trip = trips.find((t) => t.id === tripId);
     if (!trip) return;
-    // Avoid duplicates for the same trip
     const alreadyExists = payments.some((p) => p.tripId === tripId);
     if (alreadyExists) return;
 
@@ -292,25 +774,50 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const markNotificationRead = (id: string) => {
+    if (backendConnected && tokenStorage.getToken()) {
+      void notificationsApi.markRead(id).catch(() => {});
+    }
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
   };
 
   const markAllNotificationsRead = () => {
+    if (backendConnected && tokenStorage.getToken()) {
+      void notificationsApi.markAllRead().catch(() => {});
+    }
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
   const resetDemoData = () => {
+    if (backendConnected && tokenStorage.getToken()) {
+      void refreshWorkspaceData();
+      showSuccess('Données actualisées depuis le backend Spring Boot.');
+      return;
+    }
     setSailors(INITIAL_SAILORS);
     setVessels(INITIAL_VESSELS);
     setTrips(INITIAL_TRIPS);
     setSales(INITIAL_SALES);
     setExpenses(INITIAL_EXPENSES);
-    setShareRule(INITIAL_SHARE_RULE);
+    setShareRuleState(INITIAL_SHARE_RULE);
     setPayments(INITIAL_PAYMENTS);
     setNotifications(INITIAL_NOTIFICATIONS);
   };
 
   const kpis = useMemo(() => {
+    if (backendConnected && dashboardSummary?.kpis) {
+      return {
+        totalSailors: dashboardSummary.kpis.totalSailors,
+        totalVessels: dashboardSummary.kpis.totalVessels,
+        totalTrips: dashboardSummary.kpis.totalTrips,
+        totalCatchKg: Number(dashboardSummary.kpis.totalCatchKg),
+        totalRevenue: Number(dashboardSummary.kpis.totalRevenue),
+        totalExpenses: Number(dashboardSummary.kpis.totalExpenses),
+        netProfit: Number(dashboardSummary.kpis.netProfit),
+        pendingPaymentsAmount: Number(dashboardSummary.kpis.pendingPaymentsAmount),
+        pendingPaymentsCount: dashboardSummary.kpis.pendingPaymentsCount,
+      };
+    }
+
     const totalRevenue = sales.reduce((acc, s) => acc + s.totalAmount, 0);
     const totalExpenses = expenses.reduce((acc, e) => acc + e.amount, 0);
     const totalCatchKg = trips.reduce((acc, t) => acc + t.totalCatchKg, 0);
@@ -328,9 +835,19 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       pendingPaymentsAmount,
       pendingPaymentsCount: pendingPayments.length,
     };
-  }, [sailors, vessels, trips, sales, expenses, payments]);
+  }, [backendConnected, dashboardSummary, sailors, vessels, trips, sales, expenses, payments]);
 
   const monthlySeries = useMemo<MonthlyPerformancePoint[]>(() => {
+    if (backendConnected && dashboardSummary?.monthlySeries?.length) {
+      return dashboardSummary.monthlySeries.map((pt) => ({
+        month: pt.month,
+        recettes: Number(pt.recettes),
+        depenses: Number(pt.depenses),
+        benefice: Number(pt.benefice),
+        captureKg: Number(pt.captureKg),
+      }));
+    }
+
     const currentMonth: MonthlyPerformancePoint = {
       month: 'Nov',
       recettes: Math.round(kpis.totalRevenue),
@@ -339,7 +856,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       captureKg: Math.round(kpis.totalCatchKg),
     };
     return [...HISTORICAL_MONTHLY_SERIES, currentMonth];
-  }, [kpis]);
+  }, [backendConnected, dashboardSummary, kpis]);
 
   return (
     <MaritimeContext.Provider
@@ -348,8 +865,17 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setRoute,
         currentUser,
         isAuthenticated,
+        backendConnected,
+        isLoading,
+        apiError,
+        apiSuccess,
+        clearApiFeedback,
+        loginWithCredentials,
+        registerAccount,
+        requestPasswordReset,
         loginAsRole,
         logout,
+        refreshWorkspaceData,
         sailors,
         addSailor,
         updateSailor,
@@ -390,4 +916,4 @@ export function useMaritime(): MaritimeContextValue {
     throw new Error('useMaritime doit être utilisé dans un MaritimeProvider');
   }
   return ctx;
-};
+}

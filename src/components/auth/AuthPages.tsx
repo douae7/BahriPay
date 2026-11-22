@@ -18,38 +18,78 @@ const ROLE_OPTIONS: { role: UserRole; label: string; scope: string }[] = [
   { role: 'OBSERVATEUR', label: 'Observateur / Audit', scope: 'Consultation & exports rapports' },
 ];
 
+const ROLE_DEMO_EMAILS: Record<UserRole, string> = {
+  ARMATEUR: 'direction@bahripay-armement.fr',
+  CAPITAINE: 'y.keravec@bahripay-armement.fr',
+  FINANCIER: 'finances@bahripay-armement.fr',
+  OBSERVATEUR: 'audit@bahripay-armement.fr',
+};
+
 export const AuthPages: React.FC = () => {
-  const { setRoute, loginAsRole } = useMaritime();
+  const { setRoute, loginWithCredentials, registerAccount, requestPasswordReset, isLoading } = useMaritime();
   const [mode, setMode] = useState<AuthMode>('login');
   const [selectedRole, setSelectedRole] = useState<UserRole>('ARMATEUR');
   const [email, setEmail] = useState('direction@bahripay-armement.fr');
-  const [password, setPassword] = useState('••••••••••••');
+  const [password, setPassword] = useState('Bahripay2026!');
   const [fullName, setFullName] = useState('');
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [isError, setIsError] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSelectRole = (role: UserRole) => {
+    setSelectedRole(role);
+    if (mode === 'login') {
+      setEmail(ROLE_DEMO_EMAILS[role]);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFeedback(null);
+    setIsError(false);
 
     if (mode === 'forgot') {
       if (!email.includes('@')) {
+        setIsError(true);
         setFeedback('Veuillez saisir une adresse e-mail valide.');
         return;
       }
-      setFeedback(`Un lien de réinitialisation sécurisé vient d’être envoyé à ${email}.`);
+      try {
+        const msg = await requestPasswordReset(email.trim());
+        setFeedback(msg);
+      } catch (err) {
+        setIsError(true);
+        setFeedback(err instanceof Error ? err.message : 'Erreur lors de la demande.');
+      }
       return;
     }
 
     if (mode === 'register') {
-      if (!fullName.trim() || !email.includes('@')) {
-        setFeedback('Veuillez compléter votre nom complet et votre adresse e-mail professionnelle.');
+      if (!fullName.trim() || !email.includes('@') || password.length < 6) {
+        setIsError(true);
+        setFeedback('Veuillez saisir votre nom complet, un e-mail valide et un mot de passe (6 caractères min.).');
         return;
       }
-      loginAsRole(selectedRole, email.trim(), fullName.trim());
+      try {
+        await registerAccount(fullName.trim(), email.trim(), password, selectedRole);
+      } catch (err) {
+        setIsError(true);
+        setFeedback(err instanceof Error ? err.message : 'Impossible de créer le compte.');
+      }
       return;
     }
 
-    loginAsRole(selectedRole, email.trim() || undefined);
+    if (!email.includes('@') || !password.trim()) {
+      setIsError(true);
+      setFeedback('Veuillez saisir vos identifiants de connexion.');
+      return;
+    }
+
+    try {
+      await loginWithCredentials(email.trim(), password, selectedRole);
+    } catch (err) {
+      setIsError(true);
+      setFeedback(err instanceof Error ? err.message : 'Identifiants incorrects.');
+    }
   };
 
   return (
@@ -186,7 +226,7 @@ export const AuthPages: React.FC = () => {
                 <div className="pt-2">
                   <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0A4565] dark:text-[#7DDCEB] mb-2">
                     <Shield className="w-3.5 h-3.5 text-[#16C5C0]" />
-                    <span>Rôle &amp; niveau d’autorisation (Démo JWT)</span>
+                    <span>Rôle &amp; niveau d’autorisation (JWT Spring Security)</span>
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {ROLE_OPTIONS.map((opt) => {
@@ -195,7 +235,7 @@ export const AuthPages: React.FC = () => {
                         <button
                           key={opt.role}
                           type="button"
-                          onClick={() => setSelectedRole(opt.role)}
+                          onClick={() => handleSelectRole(opt.role)}
                           className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${
                             active
                               ? 'bg-[#16C5C0]/18 border-[#16C5C0] text-[#062B45] dark:text-[#F8FAFC]'
@@ -212,19 +252,32 @@ export const AuthPages: React.FC = () => {
               )}
 
               {feedback && (
-                <div className="p-3.5 rounded-xl bg-[#16C5C0]/15 border border-[#16C5C0]/40 text-xs sm:text-sm text-[#062B45] dark:text-[#7DDCEB] flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#16C5C0] shrink-0 mt-0.5" />
+                <div
+                  className={`p-3.5 rounded-xl border text-xs sm:text-sm flex items-start gap-2.5 ${
+                    isError
+                      ? 'bg-red-500/12 border-red-500/40 text-red-700 dark:text-red-300'
+                      : 'bg-[#16C5C0]/15 border-[#16C5C0]/40 text-[#062B45] dark:text-[#7DDCEB]'
+                  }`}
+                >
+                  <CheckCircle2 className={`w-4 h-4 shrink-0 mt-0.5 ${isError ? 'text-red-500' : 'text-[#16C5C0]'}`} />
                   <span>{feedback}</span>
                 </div>
               )}
 
               <MagneticButton
                 type="submit"
-                className="w-full py-3 px-5 rounded-xl bg-[#16C5C0] hover:bg-[#19d6d1] text-[#062B45] font-semibold text-sm shadow-lg shadow-[#16C5C0]/25 transition-colors cursor-pointer"
+                disabled={isLoading}
+                className="w-full py-3 px-5 rounded-xl bg-[#16C5C0] hover:bg-[#19d6d1] disabled:opacity-60 text-[#062B45] font-semibold text-sm shadow-lg shadow-[#16C5C0]/25 transition-colors cursor-pointer"
               >
-                {mode === 'login' && 'Se connecter à Bahripay'}
-                {mode === 'register' && 'Créer mon compte et accéder'}
-                {mode === 'forgot' && 'Envoyer le lien de réinitialisation'}
+                {isLoading ? (
+                  'Connexion sécurisée en cours...'
+                ) : (
+                  <>
+                    {mode === 'login' && 'Se connecter à Bahripay'}
+                    {mode === 'register' && 'Créer mon compte et accéder'}
+                    {mode === 'forgot' && 'Envoyer le lien de réinitialisation'}
+                  </>
+                )}
               </MagneticButton>
             </form>
 

@@ -142,7 +142,12 @@ export const FinancesView: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2.5">
           <MagneticButton
             type="button"
-            onClick={() => setExpenseModalOpen(true)}
+            onClick={() => {
+              if (!vessels.some((v) => v.id === expVesselId) && vessels[0]) {
+                setExpVesselId(vessels[0].id);
+              }
+              setExpenseModalOpen(true);
+            }}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/80 dark:bg-[#07263C]/80 backdrop-blur-xl border border-[#0A4565]/15 dark:border-[#7DDCEB]/20 text-sm font-semibold hover:border-[#16C5C0] cursor-pointer transition-colors"
           >
             <Plus className="w-4 h-4 text-[#16C5C0]" />
@@ -150,7 +155,12 @@ export const FinancesView: React.FC = () => {
           </MagneticButton>
           <MagneticButton
             type="button"
-            onClick={() => setSaleModalOpen(true)}
+            onClick={() => {
+              if (!trips.some((t) => t.id === saleTripId) && trips[0]) {
+                setSaleTripId(trips[0].id);
+              }
+              setSaleModalOpen(true);
+            }}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#16C5C0] hover:bg-[#19d8d2] text-[#062B45] font-semibold text-sm shadow-lg shadow-[#16C5C0]/25 cursor-pointer transition-colors"
           >
             <Plus className="w-4 h-4" />

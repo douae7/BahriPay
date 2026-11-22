@@ -165,7 +165,15 @@ export const FleetAndTripsView: React.FC = () => {
 
           <MagneticButton
             type="button"
-            onClick={() => setTripModalOpen(true)}
+            onClick={() => {
+              if (!vessels.some((v) => v.id === tripVesselId) && vessels[0]) {
+                setTripVesselId(vessels[0].id);
+              }
+              if (!tripCrewIds.some((id) => sailors.some((s) => s.id === id)) && sailors.length > 0) {
+                setTripCrewIds(sailors.slice(0, 2).map((s) => s.id));
+              }
+              setTripModalOpen(true);
+            }}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#16C5C0] hover:bg-[#19d6d1] text-[#062B45] font-semibold text-sm shadow-lg shadow-[#16C5C0]/25 transition-colors cursor-pointer"
           >
             <Plus className="w-4 h-4" />

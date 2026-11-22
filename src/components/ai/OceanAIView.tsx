@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Area,
   AreaChart,
@@ -14,12 +14,14 @@ import {
   BrainCircuit,
   Info,
   Lightbulb,
+  Loader2,
   Send,
   TrendingUp,
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useMaritime } from '../../context/MaritimeContext';
 import { useTheme } from '../../context/ThemeContext';
+import { aiApi, AiAnalysisDTO, extractApiErrorMessage } from '../../services/apiClient';
 import { AIMessage } from '../../types/maritime';
 import { FloatingGlassCard, MagneticButton } from '../common/OceanMotion';
 
@@ -32,19 +34,48 @@ const SUGGESTED_QUESTIONS = [
 ];
 
 export const OceanAIView: React.FC = () => {
-  const { vessels, trips, sales, expenses, monthlySeries, kpis } = useMaritime();
+  const { vessels, trips, sales, expenses, monthlySeries, kpis, backendConnected } = useMaritime();
   const { theme } = useTheme();
+  const [backendAnalysis, setBackendAnalysis] = useState<AiAnalysisDTO | null>(null);
+  const [asking, setAsking] = useState(false);
 
-  // Compute real live metrics from current app state for transparent demo responses
+  useEffect(() => {
+    if (!backendConnected) {
+      setBackendAnalysis(null);
+      return;
+    }
+    let active = true;
+    void (async () => {
+      try {
+        const res = await aiApi.analyse();
+        if (active) setBackendAnalysis(res);
+      } catch {
+        // Keep local fallback when backend AI endpoint is unavailable
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [backendConnected, trips.length, sales.length, expenses.length]);
+
+  // Compute real live metrics from current app state (or Spring Boot /api/ai/analyse)
   const analytics = useMemo(() => {
-    const vesselStats = vessels
-      .map((v) => {
-        const rev = sales.filter((s) => s.vesselId === v.id).reduce((sum, s) => sum + s.totalAmount, 0);
-        const exp = expenses.filter((e) => e.vesselId === v.id).reduce((sum, e) => sum + e.amount, 0);
-        const net = rev - exp;
-        return { name: v.name, registration: v.registration, rev, exp, net };
-      })
-      .sort((a, b) => b.net - a.net);
+    const vesselStats = backendAnalysis?.vesselProfitability?.length
+      ? backendAnalysis.vesselProfitability.map((v) => ({
+          name: v.vesselName,
+          registration: v.registration,
+          rev: Number(v.revenue),
+          exp: Number(v.expenses),
+          net: Number(v.netProfit),
+        }))
+      : vessels
+          .map((v) => {
+            const rev = sales.filter((s) => s.vesselId === v.id).reduce((sum, s) => sum + s.totalAmount, 0);
+            const exp = expenses.filter((e) => e.vesselId === v.id).reduce((sum, e) => sum + e.amount, 0);
+            const net = rev - exp;
+            return { name: v.name, registration: v.registration, rev, exp, net };
+          })
+          .sort((a, b) => b.net - a.net);
 
     const bestVessel = vesselStats[0];
 
@@ -60,14 +91,15 @@ export const OceanAIView: React.FC = () => {
 
     const bestTrip = tripStats[0];
 
-    const expenseTotals = ['Carburant', 'Entretien', 'Glace', 'Nourriture', 'Autres'].map((cat) => ({
-      category: cat,
-      total: expenses.filter((e) => e.category === cat).reduce((s, e) => s + e.amount, 0),
-    })).sort((a, b) => b.total - a.total);
+    const expenseTotals = ['Carburant', 'Entretien', 'Glace', 'Nourriture', 'Autres']
+      .map((cat) => ({
+        category: cat,
+        total: expenses.filter((e) => e.category === cat).reduce((s, e) => s + e.amount, 0),
+      }))
+      .sort((a, b) => b.total - a.total);
 
     const avgTripRevenue = trips.length > 0 ? Math.round(kpis.totalRevenue / trips.length) : 0;
 
-    // Trend projection based on last 3 months mean
     const recent3 = monthlySeries.slice(-3);
     const meanRecentRev = Math.round(
       recent3.reduce((s, m) => s + m.recettes, 0) / Math.max(1, recent3.length)
@@ -76,28 +108,34 @@ export const OceanAIView: React.FC = () => {
       recent3.reduce((s, m) => s + m.captureKg, 0) / Math.max(1, recent3.length)
     );
 
-    const forecastSeries = [
-      ...monthlySeries.slice(-5).map((m) => ({
-        month: m.month,
-        historique: m.recettes,
-        prevision: null as number | null,
-      })),
-      {
-        month: 'Déc (Est.)',
-        historique: null as number | null,
-        prevision: Math.round(meanRecentRev * 1.04),
-      },
-      {
-        month: 'Jan (Est.)',
-        historique: null as number | null,
-        prevision: Math.round(meanRecentRev * 0.96),
-      },
-      {
-        month: 'Fév (Est.)',
-        historique: null as number | null,
-        prevision: Math.round(meanRecentRev * 1.08),
-      },
-    ];
+    const forecastSeries = backendAnalysis?.forecastSeries?.length
+      ? backendAnalysis.forecastSeries.map((pt) => ({
+          month: pt.month,
+          historique: pt.historique != null ? Number(pt.historique) : null,
+          prevision: pt.prevision != null ? Number(pt.prevision) : null,
+        }))
+      : [
+          ...monthlySeries.slice(-5).map((m) => ({
+            month: m.month,
+            historique: m.recettes,
+            prevision: null as number | null,
+          })),
+          {
+            month: 'Déc (Est.)',
+            historique: null as number | null,
+            prevision: Math.round(meanRecentRev * 1.04),
+          },
+          {
+            month: 'Jan (Est.)',
+            historique: null as number | null,
+            prevision: Math.round(meanRecentRev * 0.96),
+          },
+          {
+            month: 'Fév (Est.)',
+            historique: null as number | null,
+            prevision: Math.round(meanRecentRev * 1.08),
+          },
+        ];
 
     return {
       vesselStats,
@@ -109,7 +147,7 @@ export const OceanAIView: React.FC = () => {
       meanRecentCatch,
       forecastSeries,
     };
-  }, [vessels, trips, sales, expenses, monthlySeries, kpis]);
+  }, [backendAnalysis, vessels, trips, sales, expenses, monthlySeries, kpis]);
 
   const [messages, setMessages] = useState<AIMessage[]>([
     {
@@ -117,7 +155,7 @@ export const OceanAIView: React.FC = () => {
       sender: 'assistant',
       timestamp: 'Maintenant',
       content:
-        'Bonjour. Je suis Ocean AI de Bahripay (mode démonstration analytique connecté à vos données de session). Posez-moi une question sur la rentabilité de vos navires, vos dépenses ou vos prévisions de captures.',
+        'Bonjour. Je suis Ocean AI de Bahripay. Posez-moi une question sur la rentabilité réelle de vos navires, vos dépenses ou vos prévisions de captures.',
       highlights: [
         {
           label: 'Navire leader',
@@ -191,9 +229,9 @@ export const OceanAIView: React.FC = () => {
         id: `ai-${Date.now()}`,
         sender: 'assistant',
         timestamp: now,
-        content: `En mode démonstration (moyenne glissante des 3 derniers mois pondérée par la saisonnalité hivernale), Ocean AI estime pour le mois prochain un chiffre d’affaires de ${estRev.toLocaleString('fr-FR')} € pour un volume de captures proche de ${estKg.toLocaleString('fr-FR')} kg.`,
+        content: `Basée sur l'historique disponible, Ocean AI estime pour le mois prochain un chiffre d’affaires prévisionnel de ${estRev.toLocaleString('fr-FR')} € pour un volume proche de ${estKg.toLocaleString('fr-FR')} kg.`,
         highlights: [
-          { label: 'Revenu estimé (Démo)', value: `${estRev.toLocaleString('fr-FR')} €` },
+          { label: 'Revenu estimé (Prévision)', value: `${estRev.toLocaleString('fr-FR')} €` },
           { label: 'Captures prévues', value: `${estKg.toLocaleString('fr-FR')} kg` },
         ],
       };
@@ -227,9 +265,9 @@ export const OceanAIView: React.FC = () => {
     };
   };
 
-  const handleSend = (text: string) => {
+  const handleSend = async (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || asking) return;
     const now = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     const userMsg: AIMessage = {
       id: `usr-${Date.now()}`,
@@ -237,9 +275,37 @@ export const OceanAIView: React.FC = () => {
       content: trimmed,
       timestamp: now,
     };
-    const aiMsg = buildAnswer(trimmed);
-    setMessages((prev) => [...prev, userMsg, aiMsg]);
+    setMessages((prev) => [...prev, userMsg]);
     setInput('');
+
+    if (backendConnected) {
+      setAsking(true);
+      try {
+        const res = await aiApi.ask(trimmed);
+        const aiMsg: AIMessage = {
+          id: `ai-${Date.now()}`,
+          sender: 'assistant',
+          content: res.answer,
+          timestamp: res.timestamp || now,
+          highlights: res.highlights,
+        };
+        setMessages((prev) => [...prev, aiMsg]);
+      } catch (err) {
+        const errMsg: AIMessage = {
+          id: `ai-err-${Date.now()}`,
+          sender: 'assistant',
+          content: `Impossible de joindre le module OceanAI Spring Boot : ${extractApiErrorMessage(err)}`,
+          timestamp: now,
+        };
+        setMessages((prev) => [...prev, errMsg]);
+      } finally {
+        setAsking(false);
+      }
+      return;
+    }
+
+    const aiMsg = buildAnswer(trimmed);
+    setMessages((prev) => [...prev, aiMsg]);
   };
 
   const axisColor = theme === 'dark' ? '#7DDCEB' : '#0A4565';
@@ -247,7 +313,7 @@ export const OceanAIView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header + Explicit Demo State Banner */}
+      {/* Header + Explicit Backend/AI Status Banner */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h1 className="font-display font-bold text-2xl sm:text-3xl tracking-tight flex items-center gap-2.5 text-[#062B45] dark:text-[#F8FAFC]">
@@ -260,9 +326,11 @@ export const OceanAIView: React.FC = () => {
         </div>
 
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/75 dark:bg-[#16C5C0]/15 backdrop-blur-xl border border-[#16C5C0]/35 text-xs text-[#062B45] dark:text-[#7DDCEB]">
-          <Info className="w-4 h-4 text-[#16C5C0] shrink-0" />
+          {asking ? <Loader2 className="w-4 h-4 text-[#16C5C0] shrink-0 animate-spin" /> : <Info className="w-4 h-4 text-[#16C5C0] shrink-0" />}
           <span>
-            Mode démonstration : calculs sur historique local · Prêt pour API Spring Boot / LLM
+            {backendAnalysis
+              ? `${backendAnalysis.geminiIntegrationStatus} · ${backendAnalysis.historicalTripsCount} marées analysées`
+              : 'Mode analytique local · Prêt pour API Spring Boot / Gemini'}
           </span>
         </div>
       </div>
