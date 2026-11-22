@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bahripay — Gestion Maritime Intelligente et Activités de Pêche</title>
+    <meta
+      name="description"
+      content="Bahripay : une nouvelle génération de solutions pour gérer, analyser et optimiser vos activités de pêche, vos équipages, vos navires et vos finances maritimes."
+    />
+    <meta property="og:title" content="Bahripay — Gestion Maritime Intelligente" />
+    <meta
+      property="og:description"
+      content="Plateforme SaaS maritime pour le pilotage des navires, marins, sorties de pêche, répartition des parts et analyses Ocean AI."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('bahripay_theme') || 'dark';
+          var root = document.documentElement;
+          if (t === 'dark') {
+            root.classList.add('dark');
+            root.style.colorScheme = 'dark';
+          } else {
+            root.classList.remove('dark');
+            root.style.colorScheme = 'light';
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="antialiased selection:bg-[#16C5C0]/30 selection:text-[#062B45] dark:selection:text-[#F8FAFC]">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
