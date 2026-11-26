@@ -21,6 +21,7 @@ import {
   isNetworkUnreachableError,
   mapBackendUser,
   marinsApi,
+  normalizeMonthLabel,
   notificationsApi,
   tokenStorage,
 } from '../services/apiClient';
@@ -190,7 +191,6 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, []);
 
-  // Restore active JWT session on mount if token exists
   useEffect(() => {
     const token = tokenStorage.getToken();
     if (!token) return;
@@ -224,12 +224,11 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setRoute('dashboard');
     } catch (err) {
       if (isNetworkUnreachableError(err)) {
-        // Backend Spring Boot non démarré dans cet environnement : bascule gracieuse en aperçu local tout en signalant l'état
         const base = DEMO_USERS[fallbackRole];
         setCurrentUser({ ...base, email: email || base.email });
         setIsAuthenticated(true);
         setBackendConnected(false);
-        setApiError('API Spring Boot non détectée sur localhost:8080 — session ouverte en mode aperçu local.');
+        setApiError('Offline preview mode active — using local workspace data.');
         setRoute('dashboard');
         return;
       }
@@ -252,7 +251,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setBackendConnected(true);
       await refreshWorkspaceData();
       setRoute('dashboard');
-      showSuccess('Compte créé et enregistré dans MySQL.');
+      showSuccess('Account created and saved successfully.');
     } catch (err) {
       if (isNetworkUnreachableError(err)) {
         const base = DEMO_USERS[role];
@@ -269,7 +268,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         });
         setIsAuthenticated(true);
         setBackendConnected(false);
-        setApiError('API Spring Boot non détectée sur localhost:8080 — compte simulé localement.');
+        setApiError('Offline preview mode active — account created locally.');
         setRoute('dashboard');
         return;
       }
@@ -289,7 +288,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return res.message;
     } catch (err) {
       if (isNetworkUnreachableError(err)) {
-        return `Un lien de réinitialisation sécurisé vient d’être préparé pour ${email} (mode aperçu hors-ligne).`;
+        return `A secure password reset link has been prepared for ${email} (offline preview mode).`;
       }
       const message = extractApiErrorMessage(err);
       setApiError(message);
@@ -370,7 +369,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           const created = await marinsApi.create(sailorData);
           setSailors((prev) => [created, ...prev]);
           await syncDashboardSummary();
-          showSuccess(`Marin ${created.firstName} ${created.lastName} enregistré en base MySQL.`);
+          showSuccess(`Crew member ${created.firstName} ${created.lastName} saved successfully.`);
         } catch (err) {
           setApiError(extractApiErrorMessage(err));
         } finally {
@@ -394,7 +393,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         try {
           const saved = await marinsApi.update(updated);
           setSailors((prev) => prev.map((s) => (s.id === saved.id ? saved : s)));
-          showSuccess(`Fiche de ${saved.firstName} ${saved.lastName} mise à jour.`);
+          showSuccess(`${saved.firstName} ${saved.lastName}'s profile updated.`);
         } catch (err) {
           setApiError(extractApiErrorMessage(err));
         } finally {
@@ -415,7 +414,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           await marinsApi.delete(id);
           setSailors((prev) => prev.filter((s) => s.id !== id));
           await syncDashboardSummary();
-          showSuccess('Marin supprimé de la base de données.');
+          showSuccess('Crew member removed from registry.');
         } catch (err) {
           setApiError(extractApiErrorMessage(err));
         } finally {
@@ -439,7 +438,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
               s.id === sailorId ? { ...s, absences: [created, ...s.absences] } : s
             )
           );
-          showSuccess('Absence enregistrée.');
+          showSuccess('Absence recorded.');
         } catch (err) {
           setApiError(extractApiErrorMessage(err));
         } finally {
@@ -509,7 +508,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           });
           setVessels((prev) => [created, ...prev]);
           await syncDashboardSummary();
-          showSuccess(`Navire ${created.name} ajouté à la flotte.`);
+          showSuccess(`Vessel ${created.name} added to the fleet.`);
         } catch (err) {
           setApiError(extractApiErrorMessage(err));
         } finally {
@@ -551,7 +550,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         try {
           await flotteApi.createTrip(tripData);
           await refreshWorkspaceData();
-          showSuccess('Sortie de pêche enregistrée et synchronisée.');
+          showSuccess('Fishing trip recorded and synced.');
         } catch (err) {
           setApiError(extractApiErrorMessage(err));
         } finally {
@@ -570,14 +569,14 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
     setTrips((prev) => [newTrip, ...prev]);
 
-    if (tripData.status === 'Terminée' && tripData.catches.length > 0) {
+    if (tripData.status === 'Completed' && tripData.catches.length > 0) {
       const autoSales: SaleRecord[] = tripData.catches.map((c, idx) => ({
         id: `sal-${Date.now()}-${idx}`,
         tripId: newTripId,
         vesselId: tripData.vesselId,
         date: tripData.returnDate.slice(0, 10),
         species: c.species,
-        buyer: 'Criée portuaire directe',
+        buyer: 'Direct Harbor Auction',
         quantityKg: c.quantityKg,
         pricePerKg: c.pricePerKg,
         totalAmount: c.totalValue,
@@ -589,11 +588,11 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setNotifications((prev) => [
       {
         id: `not-${Date.now()}`,
-        title: `Nouvelle sortie ${newTrip.code} enregistrée`,
-        message: `${vessel?.name || 'Navire'} — ${tripData.totalCatchKg.toLocaleString('fr-FR')} kg déclarés (${tripData.estimatedRevenue.toLocaleString('fr-FR')} €).`,
-        category: 'sortie',
+        title: `New trip ${newTrip.code} recorded`,
+        message: `${vessel?.name || 'Vessel'} — ${tripData.totalCatchKg.toLocaleString('en-US')} kg declared (€${tripData.estimatedRevenue.toLocaleString('en-US')}).`,
+        category: 'trip',
         severity: 'info',
-        createdAt: 'À l’instant',
+        createdAt: 'Just now',
         read: false,
         targetPage: 'fleet',
       },
@@ -608,7 +607,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           const updated = await flotteApi.updateTripStatus(tripId, status);
           setTrips((prev) => prev.map((t) => (t.id === tripId ? updated : t)));
           await syncDashboardSummary();
-          showSuccess(`Statut de la sortie ${updated.code} mis à jour.`);
+          showSuccess(`Trip ${updated.code} status updated.`);
         } catch (err) {
           setApiError(extractApiErrorMessage(err));
         }
@@ -627,7 +626,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           const created = await financesApi.createSale(saleData);
           setSales((prev) => [created, ...prev]);
           await syncDashboardSummary();
-          showSuccess('Vente enregistrée en base MySQL.');
+          showSuccess('Sale recorded successfully.');
         } catch (err) {
           setApiError(extractApiErrorMessage(err));
         } finally {
@@ -654,7 +653,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           const created = await financesApi.createExpense(expenseData);
           setExpenses((prev) => [created, ...prev]);
           await syncDashboardSummary();
-          showSuccess('Dépense enregistrée en base MySQL.');
+          showSuccess('Expense recorded successfully.');
         } catch (err) {
           setApiError(extractApiErrorMessage(err));
         } finally {
@@ -683,7 +682,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           try {
             const saved = await financesApi.updateShareRule(rule);
             setShareRuleState(saved);
-            showSuccess('Règle de répartition sauvegardée en base MySQL.');
+            showSuccess('Share distribution rule saved.');
           } catch (err) {
             setApiError(extractApiErrorMessage(err));
           }
@@ -700,7 +699,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           const updated = await financesApi.markPaymentPaid(paymentId);
           setPayments((prev) => prev.map((p) => (p.id === paymentId ? updated : p)));
           await syncDashboardSummary();
-          showSuccess('Paiement validé et marqué comme réglé.');
+          showSuccess('Payment approved and marked as paid.');
         } catch (err) {
           setApiError(extractApiErrorMessage(err));
         } finally {
@@ -712,7 +711,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     const today = new Date().toISOString().slice(0, 10);
     setPayments((prev) =>
-      prev.map((p) => (p.id === paymentId ? { ...p, status: 'Payé', paidAt: today } : p))
+      prev.map((p) => (p.id === paymentId ? { ...p, status: 'Paid', paidAt: today } : p))
     );
   };
 
@@ -724,7 +723,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           const createdList = await financesApi.generateTripPayments(tripId);
           setPayments((prev) => [...createdList, ...prev]);
           await syncDashboardSummary();
-          showSuccess(`${createdList.length} fiches de paie générées depuis la règle MySQL.`);
+          showSuccess(`${createdList.length} payment slips generated from active share rules.`);
         } catch (err) {
           setApiError(extractApiErrorMessage(err));
         } finally {
@@ -759,7 +758,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       id: `pay-${Date.now()}-${idx}`,
       sailorId: member.id,
       tripId: trip.id,
-      periodLabel: `Marée ${trip.code}`,
+      periodLabel: `Trip ${trip.code}`,
       grossTripRevenue: grossRevenue,
       commonExpenses: tripExpenses,
       netDistributable,
@@ -767,7 +766,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       sailorWeight: member.shareWeight,
       totalCrewWeights: totalWeights,
       amountDue: Math.round((crewPool * (member.shareWeight / totalWeights)) * 100) / 100,
-      status: 'En attente',
+      status: 'Pending',
     }));
 
     setPayments((prev) => [...created, ...prev]);
@@ -790,7 +789,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const resetDemoData = () => {
     if (backendConnected && tokenStorage.getToken()) {
       void refreshWorkspaceData();
-      showSuccess('Données actualisées depuis le backend Spring Boot.');
+      showSuccess('Workspace data refreshed.');
       return;
     }
     setSailors(INITIAL_SAILORS);
@@ -821,7 +820,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const totalRevenue = sales.reduce((acc, s) => acc + s.totalAmount, 0);
     const totalExpenses = expenses.reduce((acc, e) => acc + e.amount, 0);
     const totalCatchKg = trips.reduce((acc, t) => acc + t.totalCatchKg, 0);
-    const pendingPayments = payments.filter((p) => p.status === 'En attente');
+    const pendingPayments = payments.filter((p) => p.status === 'Pending');
     const pendingPaymentsAmount = pendingPayments.reduce((acc, p) => acc + p.amountDue, 0);
 
     return {
@@ -840,7 +839,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const monthlySeries = useMemo<MonthlyPerformancePoint[]>(() => {
     if (backendConnected && dashboardSummary?.monthlySeries?.length) {
       return dashboardSummary.monthlySeries.map((pt) => ({
-        month: pt.month,
+        month: normalizeMonthLabel(pt.month),
         recettes: Number(pt.recettes),
         depenses: Number(pt.depenses),
         benefice: Number(pt.benefice),
@@ -913,7 +912,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 export function useMaritime(): MaritimeContextValue {
   const ctx = useContext(MaritimeContext);
   if (!ctx) {
-    throw new Error('useMaritime doit être utilisé dans un MaritimeProvider');
+    throw new Error('useMaritime must be used within a MaritimeProvider');
   }
   return ctx;
 }

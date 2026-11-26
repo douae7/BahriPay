@@ -16,6 +16,7 @@ import { useMaritime } from '../../context/MaritimeContext';
 import {
   ContractType,
   Sailor,
+  SailorAbsence,
   SailorDocument,
   SailorGrade,
   SailorStatus,
@@ -23,11 +24,11 @@ import {
 import { FloatingGlassCard, MagneticButton } from '../common/OceanMotion';
 
 const GRADE_WEIGHTS: Record<SailorGrade, number> = {
-  Capitaine: 2.0,
-  Second: 1.5,
-  Mécanicien: 1.5,
-  Matelot: 1.0,
-  Mousse: 0.75,
+  Captain: 2.0,
+  'First Mate': 1.5,
+  Engineer: 1.5,
+  Deckhand: 1.0,
+  Apprentice: 0.75,
 };
 
 export const SailorsView: React.FC = () => {
@@ -57,16 +58,16 @@ export const SailorsView: React.FC = () => {
   const [registrationNumber, setRegistrationNumber] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [grade, setGrade] = useState<SailorGrade>('Matelot');
-  const [status, setStatus] = useState<SailorStatus>('Actif');
-  const [contractType, setContractType] = useState<ContractType>('À la part');
+  const [grade, setGrade] = useState<SailorGrade>('Deckhand');
+  const [status, setStatus] = useState<SailorStatus>('Active');
+  const [contractType, setContractType] = useState<ContractType>('Share Contract');
   const [contractStart, setContractStart] = useState('2026-01-15');
   const [contractEnd, setContractEnd] = useState('');
   const [vesselId, setVesselId] = useState('ves-1');
   const [portAttache, setPortAttache] = useState('Concarneau');
   const [yearsExperience, setYearsExperience] = useState(5);
 
-  const [absType, setAbsType] = useState<'Congé payé' | 'Repos compensateur' | 'Maladie' | 'Formation STCW'>('Repos compensateur');
+  const [absType, setAbsType] = useState<SailorAbsence['type']>('Compensatory Rest');
   const [absStart, setAbsStart] = useState('2026-11-24');
   const [absEnd, setAbsEnd] = useState('2026-11-28');
 
@@ -96,9 +97,9 @@ export const SailorsView: React.FC = () => {
     setRegistrationNumber(`ENIM-${Math.floor(400000 + Math.random() * 500000)}`);
     setPhone('+33 6 ');
     setEmail('');
-    setGrade('Matelot');
-    setStatus('Actif');
-    setContractType('À la part');
+    setGrade('Deckhand');
+    setStatus('Active');
+    setContractType('Share Contract');
     setContractStart(new Date().toISOString().slice(0, 10));
     setContractEnd('');
     setVesselId(vessels[0]?.id || '');
@@ -153,8 +154,8 @@ export const SailorsView: React.FC = () => {
       addSailor({
         ...payload,
         documents: [
-          { id: `doc-${Date.now()}-1`, name: 'Visite médicale gens de mer', status: 'Valide', expiryDate: '2027-11-01' },
-          { id: `doc-${Date.now()}-2`, name: 'Certificat sécurité STCW', status: 'À renouveler', expiryDate: '2026-12-20' },
+          { id: `doc-${Date.now()}-1`, name: 'Seafarer Medical Fitness', status: 'Valid', expiryDate: '2027-11-01' },
+          { id: `doc-${Date.now()}-2`, name: 'STCW Safety Certificate', status: 'Renewal Due', expiryDate: '2026-12-20' },
         ],
         absences: [],
       });
@@ -177,7 +178,7 @@ export const SailorsView: React.FC = () => {
   };
 
   const cycleDocStatus = (sailorId: string, doc: SailorDocument) => {
-    const order: SailorDocument['status'][] = ['Valide', 'À renouveler', 'Manquant'];
+    const order: SailorDocument['status'][] = ['Valid', 'Renewal Due', 'Missing'];
     const next = order[(order.indexOf(doc.status) + 1) % order.length];
     updateSailorDocStatus(sailorId, doc.id, next);
   };
@@ -188,10 +189,10 @@ export const SailorsView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-display font-bold text-2xl sm:text-3xl tracking-tight">
-            Administration des marins
+            Crew Administration
           </h1>
           <p className="text-sm text-[#0A4565]/75 dark:text-[#7DDCEB]/80 mt-1">
-            Registre complet des équipages, grades, contrats à la part, absences et documents ENIM.
+            Complete crew registry, grades, share contracts, absences, and maritime certificates.
           </p>
         </div>
         <MagneticButton
@@ -200,7 +201,7 @@ export const SailorsView: React.FC = () => {
           className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#16C5C0] hover:bg-[#19d6d1] text-[#062B45] font-semibold text-sm shadow-lg shadow-[#16C5C0]/25 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>Ajouter un marin</span>
+          <span>Add Crew Member</span>
         </MagneticButton>
       </div>
 
@@ -212,7 +213,7 @@ export const SailorsView: React.FC = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher par nom, matricule ENIM ou port..."
+            placeholder="Search by name, maritime ID, or home port..."
             className="w-full pl-10 pr-4 py-2 rounded-xl bg-white/70 dark:bg-[#041826]/70 border border-[#0A4565]/10 dark:border-[#7DDCEB]/15 text-sm focus:outline-none focus:ring-2 focus:ring-[#16C5C0]"
           />
         </div>
@@ -220,29 +221,29 @@ export const SailorsView: React.FC = () => {
           <select
             value={gradeFilter}
             onChange={(e) => setGradeFilter(e.target.value)}
-            aria-label="Filtrer par grade"
+            aria-label="Filter by grade"
             className="w-full px-3 py-2 rounded-xl bg-white/70 dark:bg-[#041826]/70 border border-[#0A4565]/10 dark:border-[#7DDCEB]/15 text-sm focus:outline-none focus:ring-2 focus:ring-[#16C5C0]"
           >
-            <option value="ALL">Tous les grades</option>
-            <option value="Capitaine">Capitaine</option>
-            <option value="Second">Second</option>
-            <option value="Mécanicien">Mécanicien</option>
-            <option value="Matelot">Matelot</option>
-            <option value="Mousse">Mousse</option>
+            <option value="ALL">All Grades</option>
+            <option value="Captain">Captain</option>
+            <option value="First Mate">First Mate</option>
+            <option value="Engineer">Engineer</option>
+            <option value="Deckhand">Deckhand</option>
+            <option value="Apprentice">Apprentice</option>
           </select>
         </div>
         <div className="sm:col-span-3">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            aria-label="Filtrer par statut"
+            aria-label="Filter by status"
             className="w-full px-3 py-2 rounded-xl bg-white/70 dark:bg-[#041826]/70 border border-[#0A4565]/10 dark:border-[#7DDCEB]/15 text-sm focus:outline-none focus:ring-2 focus:ring-[#16C5C0]"
           >
-            <option value="ALL">Tous les statuts</option>
-            <option value="Actif">Actif</option>
-            <option value="En mer">En mer</option>
-            <option value="En congé">En congé</option>
-            <option value="Repos">Repos</option>
+            <option value="ALL">All Statuses</option>
+            <option value="Active">Active</option>
+            <option value="At Sea">At Sea</option>
+            <option value="On Leave">On Leave</option>
+            <option value="Rest">Rest</option>
           </select>
         </div>
       </FloatingGlassCard>
@@ -252,19 +253,19 @@ export const SailorsView: React.FC = () => {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-[#0A4565]/10 dark:border-[#7DDCEB]/12 text-xs font-semibold text-[#0A4565]/70 dark:text-[#7DDCEB]/75">
-              <th className="py-3.5 px-5">Marin &amp; Matricule</th>
-              <th className="py-3.5 px-4">Grade &amp; Part</th>
-              <th className="py-3.5 px-4">Navire affecté</th>
-              <th className="py-3.5 px-4">Contrat</th>
+              <th className="py-3.5 px-5">Crew Member &amp; ID</th>
+              <th className="py-3.5 px-4">Grade &amp; Share</th>
+              <th className="py-3.5 px-4">Assigned Vessel</th>
+              <th className="py-3.5 px-4">Contract</th>
               <th className="py-3.5 px-4">Documents</th>
-              <th className="py-3.5 px-4">Statut</th>
+              <th className="py-3.5 px-4">Status</th>
               <th className="py-3.5 px-5 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#0A4565]/10 dark:divide-[#7DDCEB]/10 text-sm">
             {filteredSailors.map((sailor) => {
               const vessel = vessels.find((v) => v.id === sailor.vesselId);
-              const missingDocs = sailor.documents.filter((d) => d.status !== 'Valide').length;
+              const missingDocs = sailor.documents.filter((d) => d.status !== 'Valid').length;
               return (
                 <tr
                   key={sailor.id}
@@ -286,13 +287,13 @@ export const SailorsView: React.FC = () => {
                     </div>
                   </td>
                   <td className="py-3.5 px-4 text-xs">
-                    {vessel ? vessel.name : 'Non affecté'}
+                    {vessel ? vessel.name : 'Unassigned'}
                   </td>
                   <td className="py-3.5 px-4 text-xs">
                     <div>{sailor.contractType}</div>
                     {sailor.contractEnd && (
                       <div className="text-[11px] text-amber-600 dark:text-amber-400">
-                        Fin : {sailor.contractEnd}
+                        Ends: {sailor.contractEnd}
                       </div>
                     )}
                   </td>
@@ -300,12 +301,12 @@ export const SailorsView: React.FC = () => {
                     {missingDocs === 0 ? (
                       <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        Dossier complet
+                        Complete
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-medium">
                         <FileWarning className="w-3.5 h-3.5" />
-                        {missingDocs} à vérifier
+                        {missingDocs} to review
                       </span>
                     )}
                   </td>
@@ -318,7 +319,7 @@ export const SailorsView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => openEditModal(sailor)}
-                        title="Modifier"
+                        title="Edit"
                         className="p-2 rounded-lg hover:bg-[#0A4565]/10 dark:hover:bg-[#7DDCEB]/15 cursor-pointer"
                       >
                         <Edit3 className="w-4 h-4" />
@@ -329,7 +330,7 @@ export const SailorsView: React.FC = () => {
                           if (selectedSailorId === sailor.id) setSelectedSailorId(null);
                           deleteSailor(sailor.id);
                         }}
-                        title="Supprimer"
+                        title="Delete"
                         className="p-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-500/10 cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -342,7 +343,7 @@ export const SailorsView: React.FC = () => {
             {filteredSailors.length === 0 && (
               <tr>
                 <td colSpan={7} className="py-10 text-center text-sm text-[#0A4565]/65 dark:text-[#7DDCEB]/70">
-                  Aucun marin ne correspond à vos critères de recherche.
+                  No crew members match your search criteria.
                 </td>
               </tr>
             )}
@@ -373,8 +374,8 @@ export const SailorsView: React.FC = () => {
                 <span className="text-xs font-semibold text-[#16C5C0]">{sailor.status}</span>
               </div>
               <div className="text-xs text-[#0A4565]/80 dark:text-[#F8FAFC]/75 flex flex-wrap gap-x-3 gap-y-1">
-                <span>Navire : {vessel?.name || '—'}</span>
-                <span>Part : {sailor.shareWeight.toFixed(2)}</span>
+                <span>Vessel: {vessel?.name || '—'}</span>
+                <span>Share: {sailor.shareWeight.toFixed(2)}</span>
                 <span>{sailor.contractType}</span>
               </div>
               <div className="pt-2 border-t border-[#0A4565]/10 dark:border-[#7DDCEB]/10 flex items-center justify-between">
@@ -383,14 +384,14 @@ export const SailorsView: React.FC = () => {
                   onClick={() => setSelectedSailorId(sailor.id)}
                   className="text-xs font-semibold text-[#16C5C0]"
                 >
-                  Ouvrir la fiche détaillée
+                  Open detailed profile
                 </button>
                 <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                   <button
                     type="button"
                     onClick={() => openEditModal(sailor)}
                     className="p-2 rounded-lg bg-[#F1F6FA] dark:bg-[#041826]"
-                    aria-label="Modifier"
+                    aria-label="Edit"
                   >
                     <Edit3 className="w-4 h-4" />
                   </button>
@@ -398,7 +399,7 @@ export const SailorsView: React.FC = () => {
                     type="button"
                     onClick={() => deleteSailor(sailor.id)}
                     className="p-2 rounded-lg bg-red-500/10 text-red-500"
-                    aria-label="Supprimer"
+                    aria-label="Delete"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -409,7 +410,7 @@ export const SailorsView: React.FC = () => {
         })}
       </div>
 
-      {/* SLIDE-OVER: FICHE DÉTAILLÉE DU MARIN */}
+      {/* SLIDE-OVER: CREW MEMBER DETAIL */}
       {selectedSailor && (
         <div className="fixed inset-0 z-50 flex justify-end">
           <div
@@ -431,7 +432,7 @@ export const SailorsView: React.FC = () => {
                 type="button"
                 onClick={() => setSelectedSailorId(null)}
                 className="p-2 rounded-xl hover:bg-[#0A4565]/10 dark:hover:bg-[#7DDCEB]/10 cursor-pointer"
-                aria-label="Fermer la fiche"
+                aria-label="Close profile"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -440,7 +441,7 @@ export const SailorsView: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div className="p-4 rounded-2xl bg-[#F1F6FA] dark:bg-[#041826]/80 space-y-2">
                 <div className="text-xs font-semibold text-[#0A4565]/70 dark:text-[#7DDCEB]/75">
-                  Coordonnées
+                  Contact Info
                 </div>
                 <div className="flex items-center gap-2 text-xs">
                   <Phone className="w-3.5 h-3.5 text-[#16C5C0]" />
@@ -453,11 +454,11 @@ export const SailorsView: React.FC = () => {
               </div>
               <div className="p-4 rounded-2xl bg-[#F1F6FA] dark:bg-[#041826]/80 space-y-1.5">
                 <div className="text-xs font-semibold text-[#0A4565]/70 dark:text-[#7DDCEB]/75">
-                  Contrat &amp; Expérience
+                  Contract &amp; Experience
                 </div>
                 <div className="text-sm font-semibold">{selectedSailor.contractType}</div>
                 <div className="text-xs text-[#0A4565]/75 dark:text-[#F8FAFC]/70">
-                  Depuis {selectedSailor.contractStart} · {selectedSailor.yearsExperience} ans de mer
+                  Since {selectedSailor.contractStart} · {selectedSailor.yearsExperience} yrs at sea
                 </div>
               </div>
             </div>
@@ -465,10 +466,10 @@ export const SailorsView: React.FC = () => {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-display font-semibold text-base">
-                  Documents administratifs &amp; brevets
+                  Administrative Documents &amp; Certificates
                 </h3>
                 <span className="text-[11px] text-[#0A4565]/65 dark:text-[#7DDCEB]/70">
-                  Cliquer pour changer le statut
+                  Click to cycle status
                 </span>
               </div>
               <div className="space-y-2">
@@ -483,15 +484,15 @@ export const SailorsView: React.FC = () => {
                       <div className="text-sm font-medium">{doc.name}</div>
                       {doc.expiryDate && (
                         <div className="text-xs text-[#0A4565]/65 dark:text-[#F8FAFC]/55">
-                          Échéance : {doc.expiryDate}
+                          Expires: {doc.expiryDate}
                         </div>
                       )}
                     </div>
                     <span
                       className={`text-xs font-semibold ${
-                        doc.status === 'Valide'
+                        doc.status === 'Valid'
                           ? 'text-emerald-600 dark:text-emerald-400'
-                          : doc.status === 'À renouveler'
+                          : doc.status === 'Renewal Due'
                           ? 'text-amber-600 dark:text-amber-400'
                           : 'text-red-600 dark:text-red-400'
                       }`}
@@ -505,7 +506,7 @@ export const SailorsView: React.FC = () => {
 
             <div>
               <h3 className="font-display font-semibold text-base mb-3">
-                Suivi des absences &amp; congés
+                Absences &amp; Leave Tracking
               </h3>
               <form onSubmit={handleAddAbsence} className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-3">
                 <select
@@ -513,10 +514,10 @@ export const SailorsView: React.FC = () => {
                   onChange={(e) => setAbsType(e.target.value as typeof absType)}
                   className="sm:col-span-2 px-3 py-2 rounded-xl bg-[#F1F6FA] dark:bg-[#041826] border border-[#0A4565]/12 dark:border-[#7DDCEB]/15 text-xs"
                 >
-                  <option value="Repos compensateur">Repos compensateur</option>
-                  <option value="Congé payé">Congé payé</option>
-                  <option value="Formation STCW">Formation STCW</option>
-                  <option value="Maladie">Maladie</option>
+                  <option value="Compensatory Rest">Compensatory Rest</option>
+                  <option value="Paid Leave">Paid Leave</option>
+                  <option value="STCW Training">STCW Training</option>
+                  <option value="Medical Leave">Medical Leave</option>
                 </select>
                 <input
                   type="date"
@@ -529,14 +530,14 @@ export const SailorsView: React.FC = () => {
                   className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-[#16C5C0] text-[#062B45] font-semibold text-xs cursor-pointer"
                 >
                   <CalendarPlus className="w-3.5 h-3.5" />
-                  <span>Ajouter</span>
+                  <span>Add</span>
                 </button>
               </form>
 
               <div className="space-y-2">
                 {selectedSailor.absences.length === 0 ? (
                   <p className="text-xs text-[#0A4565]/65 dark:text-[#7DDCEB]/70">
-                    Aucune absence enregistrée sur la période.
+                    No absences recorded for this period.
                   </p>
                 ) : (
                   selectedSailor.absences.map((a) => (
@@ -550,7 +551,7 @@ export const SailorsView: React.FC = () => {
                           {a.startDate} → {a.endDate}
                         </span>
                       </div>
-                      <span className="font-mono font-semibold text-[#16C5C0]">{a.days} j</span>
+                      <span className="font-mono font-semibold text-[#16C5C0]">{a.days} d</span>
                     </div>
                   ))
                 )}
@@ -559,7 +560,7 @@ export const SailorsView: React.FC = () => {
 
             <div>
               <h3 className="font-display font-semibold text-base mb-3">
-                Historique des sorties &amp; règlements
+                Trip &amp; Settlement History
               </h3>
               <div className="space-y-2 text-xs">
                 {trips
@@ -578,16 +579,16 @@ export const SailorsView: React.FC = () => {
                             {t.code} · {t.zone}
                           </div>
                           <div className="opacity-70 mt-0.5">
-                            {t.departureDate.slice(0, 10)} · {t.totalCatchKg.toLocaleString('fr-FR')} kg
+                            {t.departureDate.slice(0, 10)} · {t.totalCatchKg.toLocaleString('en-US')} kg
                           </div>
                         </div>
                         <div className="text-right font-mono tabular-nums">
                           {pay ? (
                             <>
-                              <div className="font-bold">{pay.amountDue.toLocaleString('fr-FR')} €</div>
+                              <div className="font-bold">€{pay.amountDue.toLocaleString('en-US')}</div>
                               <div
                                 className={
-                                  pay.status === 'Payé' ? 'text-emerald-500' : 'text-amber-500'
+                                  pay.status === 'Paid' ? 'text-emerald-500' : 'text-amber-500'
                                 }
                               >
                                 {pay.status}
@@ -606,7 +607,7 @@ export const SailorsView: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL: AJOUTER / MODIFIER UN MARIN */}
+      {/* MODAL: ADD / EDIT CREW MEMBER */}
       {formModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
@@ -620,7 +621,7 @@ export const SailorsView: React.FC = () => {
             <div className="flex items-center justify-between">
               <h2 className="font-display font-bold text-xl flex items-center gap-2">
                 <UserCheck className="w-5 h-5 text-[#16C5C0]" />
-                <span>{editingSailor ? 'Modifier la fiche marin' : 'Nouveau marin'}</span>
+                <span>{editingSailor ? 'Edit Crew Member' : 'New Crew Member'}</span>
               </h2>
               <button
                 type="button"
@@ -633,7 +634,7 @@ export const SailorsView: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label className="block text-xs font-semibold mb-1">Prénom</label>
+                <label className="block text-xs font-semibold mb-1">First Name</label>
                 <input
                   required
                   value={firstName}
@@ -642,7 +643,7 @@ export const SailorsView: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1">Nom</label>
+                <label className="block text-xs font-semibold mb-1">Last Name</label>
                 <input
                   required
                   value={lastName}
@@ -651,7 +652,7 @@ export const SailorsView: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1">Matricule ENIM</label>
+                <label className="block text-xs font-semibold mb-1">Maritime ID</label>
                 <input
                   required
                   value={registrationNumber}
@@ -660,7 +661,7 @@ export const SailorsView: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1">Port d’attache</label>
+                <label className="block text-xs font-semibold mb-1">Home Port</label>
                 <input
                   required
                   value={portAttache}
@@ -669,7 +670,7 @@ export const SailorsView: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1">Téléphone</label>
+                <label className="block text-xs font-semibold mb-1">Phone</label>
                 <input
                   required
                   value={phone}
@@ -688,52 +689,52 @@ export const SailorsView: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1">Grade professionnel</label>
+                <label className="block text-xs font-semibold mb-1">Professional Grade</label>
                 <select
                   value={grade}
                   onChange={(e) => setGrade(e.target.value as SailorGrade)}
                   className="w-full px-3 py-2 rounded-xl bg-[#F1F6FA] dark:bg-[#041826] border border-[#0A4565]/15 dark:border-[#7DDCEB]/15 text-sm"
                 >
-                  <option value="Capitaine">Capitaine (2.0 parts)</option>
-                  <option value="Second">Second (1.5 parts)</option>
-                  <option value="Mécanicien">Mécanicien (1.5 parts)</option>
-                  <option value="Matelot">Matelot (1.0 part)</option>
-                  <option value="Mousse">Mousse (0.75 part)</option>
+                  <option value="Captain">Captain (2.0 shares)</option>
+                  <option value="First Mate">First Mate (1.5 shares)</option>
+                  <option value="Engineer">Engineer (1.5 shares)</option>
+                  <option value="Deckhand">Deckhand (1.0 share)</option>
+                  <option value="Apprentice">Apprentice (0.75 share)</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1">Statut</label>
+                <label className="block text-xs font-semibold mb-1">Status</label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as SailorStatus)}
                   className="w-full px-3 py-2 rounded-xl bg-[#F1F6FA] dark:bg-[#041826] border border-[#0A4565]/15 dark:border-[#7DDCEB]/15 text-sm"
                 >
-                  <option value="Actif">Actif</option>
-                  <option value="En mer">En mer</option>
-                  <option value="En congé">En congé</option>
-                  <option value="Repos">Repos</option>
+                  <option value="Active">Active</option>
+                  <option value="At Sea">At Sea</option>
+                  <option value="On Leave">On Leave</option>
+                  <option value="Rest">Rest</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1">Type de contrat</label>
+                <label className="block text-xs font-semibold mb-1">Contract Type</label>
                 <select
                   value={contractType}
                   onChange={(e) => setContractType(e.target.value as ContractType)}
                   className="w-full px-3 py-2 rounded-xl bg-[#F1F6FA] dark:bg-[#041826] border border-[#0A4565]/15 dark:border-[#7DDCEB]/15 text-sm"
                 >
-                  <option value="À la part">À la part</option>
-                  <option value="CDI Maritime">CDI Maritime</option>
-                  <option value="CDD Saisonnier">CDD Saisonnier</option>
+                  <option value="Share Contract">Share Contract</option>
+                  <option value="Permanent Maritime">Permanent Maritime</option>
+                  <option value="Seasonal Fixed-Term">Seasonal Fixed-Term</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1">Bateau affecté</label>
+                <label className="block text-xs font-semibold mb-1">Assigned Vessel</label>
                 <select
                   value={vesselId}
                   onChange={(e) => setVesselId(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl bg-[#F1F6FA] dark:bg-[#041826] border border-[#0A4565]/15 dark:border-[#7DDCEB]/15 text-sm"
                 >
-                  <option value="">Aucun navire fixe</option>
+                  <option value="">No fixed vessel</option>
                   {vessels.map((v) => (
                     <option key={v.id} value={v.id}>
                       {v.name} ({v.registration})
@@ -749,13 +750,13 @@ export const SailorsView: React.FC = () => {
                 onClick={() => setFormModalOpen(false)}
                 className="px-4 py-2 rounded-xl text-sm font-medium hover:bg-[#0A4565]/10 cursor-pointer"
               >
-                Annuler
+                Cancel
               </button>
               <button
                 type="submit"
                 className="px-5 py-2.5 rounded-xl bg-[#16C5C0] hover:bg-[#13b0ac] text-[#062B45] font-semibold text-sm cursor-pointer"
               >
-                {editingSailor ? 'Enregistrer les modifications' : 'Créer le marin'}
+                {editingSailor ? 'Save Changes' : 'Create Crew Member'}
               </button>
             </div>
           </form>

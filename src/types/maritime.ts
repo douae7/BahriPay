@@ -9,20 +9,20 @@ export interface UserAccount {
   avatarInitials: string;
 }
 
-export type SailorGrade = 'Capitaine' | 'Second' | 'Mécanicien' | 'Matelot' | 'Mousse';
-export type SailorStatus = 'Actif' | 'En mer' | 'En congé' | 'Repos';
-export type ContractType = 'À la part' | 'CDI Maritime' | 'CDD Saisonnier';
+export type SailorGrade = 'Captain' | 'First Mate' | 'Engineer' | 'Deckhand' | 'Apprentice';
+export type SailorStatus = 'Active' | 'At Sea' | 'On Leave' | 'Rest';
+export type ContractType = 'Share Contract' | 'Permanent Maritime' | 'Seasonal Fixed-Term';
 
 export interface SailorDocument {
   id: string;
   name: string;
-  status: 'Valide' | 'Manquant' | 'À renouveler';
+  status: 'Valid' | 'Missing' | 'Renewal Due';
   expiryDate?: string;
 }
 
 export interface SailorAbsence {
   id: string;
-  type: 'Congé payé' | 'Repos compensateur' | 'Maladie' | 'Formation STCW';
+  type: 'Paid Leave' | 'Compensatory Rest' | 'Medical Leave' | 'STCW Training';
   startDate: string;
   endDate: string;
   days: number;
@@ -37,7 +37,7 @@ export interface Sailor {
   phone: string;
   email: string;
   grade: SailorGrade;
-  shareWeight: number; // Coefficient de part (ex: Capitaine 2.0, Matelot 1.0)
+  shareWeight: number; // Share coefficient (e.g., Captain 2.0, Deckhand 1.0)
   status: SailorStatus;
   contractType: ContractType;
   contractStart: string;
@@ -49,7 +49,7 @@ export interface Sailor {
   absences: SailorAbsence[];
 }
 
-export type VesselStatus = 'Disponible' | 'En mer' | 'En maintenance';
+export type VesselStatus = 'Available' | 'At Sea' | 'In Maintenance';
 
 export interface Vessel {
   id: string;
@@ -67,14 +67,14 @@ export interface Vessel {
 }
 
 export type FishSpecies =
-  | 'Bar de ligne'
-  | 'Dorade royale'
-  | 'Thon rouge'
-  | 'Merlu blanc'
-  | 'Langoustine'
+  | 'Line-Caught Sea Bass'
+  | 'Gilthead Bream'
+  | 'Bluefin Tuna'
+  | 'European Hake'
+  | 'Norway Lobster'
   | 'Sardine'
-  | 'Maquereau'
-  | 'Sole commune';
+  | 'Mackerel'
+  | 'Common Sole';
 
 export interface CatchEntry {
   id: string;
@@ -84,7 +84,7 @@ export interface CatchEntry {
   totalValue: number;
 }
 
-export type TripStatus = 'En cours' | 'Terminée' | 'Planifiée';
+export type TripStatus = 'In Progress' | 'Completed' | 'Scheduled';
 
 export interface FishingTrip {
   id: string;
@@ -113,7 +113,7 @@ export interface SaleRecord {
   totalAmount: number;
 }
 
-export type ExpenseCategory = 'Carburant' | 'Glace' | 'Nourriture' | 'Entretien' | 'Autres';
+export type ExpenseCategory = 'Fuel' | 'Ice' | 'Provisions' | 'Maintenance' | 'Other';
 
 export interface ExpenseRecord {
   id: string;
@@ -126,8 +126,8 @@ export interface ExpenseRecord {
 }
 
 export interface ShareRuleConfig {
-  boatSharePercent: number; // ex: 45% Armateur / Navire
-  crewSharePercent: number; // ex: 55% Équipage
+  boatSharePercent: number; // e.g. 45% Shipowner / Vessel
+  crewSharePercent: number; // e.g. 55% Crew
   deductCommonExpensesBeforeSplit: boolean;
 }
 
@@ -143,17 +143,17 @@ export interface PaymentRecord {
   sailorWeight: number;
   totalCrewWeights: number;
   amountDue: number;
-  status: 'Payé' | 'En attente';
+  status: 'Paid' | 'Pending';
   paidAt?: string;
 }
 
 export type NotificationCategory =
-  | 'paiement'
-  | 'sortie'
-  | 'contrat'
+  | 'payment'
+  | 'trip'
+  | 'contract'
   | 'document'
   | 'finance'
-  | 'ia';
+  | 'ai';
 
 export interface AppNotification {
   id: string;

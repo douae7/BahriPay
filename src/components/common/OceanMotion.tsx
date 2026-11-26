@@ -56,11 +56,11 @@ export const AnimatedNumber: React.FC<AnimatedNumberProps> = ({
 
   const formatted =
     decimals > 0
-      ? displayValue.toLocaleString('fr-FR', {
+      ? displayValue.toLocaleString('en-US', {
           minimumFractionDigits: decimals,
           maximumFractionDigits: decimals,
         })
-      : Math.round(displayValue).toLocaleString('fr-FR');
+      : Math.round(displayValue).toLocaleString('en-US');
 
   return (
     <span className={`font-mono tabular-nums ${className}`}>

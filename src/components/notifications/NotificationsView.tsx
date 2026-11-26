@@ -15,13 +15,13 @@ import { NotificationCategory } from '../../types/maritime';
 import { FloatingGlassCard, MagneticButton } from '../common/OceanMotion';
 
 const CATEGORY_LABELS: Record<'ALL' | NotificationCategory, string> = {
-  ALL: 'Toutes',
-  paiement: 'Paiements',
-  sortie: 'Sorties',
-  contrat: 'Contrats',
+  ALL: 'All',
+  payment: 'Payments',
+  trip: 'Trips',
+  contract: 'Contracts',
   document: 'Documents',
   finance: 'Finances',
-  ia: 'Ocean AI',
+  ai: 'Ocean AI',
 };
 
 export const NotificationsView: React.FC = () => {
@@ -34,14 +34,14 @@ export const NotificationsView: React.FC = () => {
 
   const getIcon = (cat: NotificationCategory) => {
     switch (cat) {
-      case 'paiement':
+      case 'payment':
       case 'finance':
         return Wallet;
-      case 'sortie':
+      case 'trip':
         return Ship;
       case 'document':
         return FileWarning;
-      case 'ia':
+      case 'ai':
         return BrainCircuit;
       default:
         return AlertTriangle;
@@ -54,10 +54,10 @@ export const NotificationsView: React.FC = () => {
         <div>
           <h1 className="font-display font-bold text-2xl sm:text-3xl tracking-tight flex items-center gap-2.5 text-[#062B45] dark:text-[#F8FAFC]">
             <Bell className="w-6 h-6 text-[#16C5C0]" />
-            <span>Centre de notifications</span>
+            <span>Notification Center</span>
           </h1>
           <p className="text-sm text-[#0A4565]/75 dark:text-[#7DDCEB]/80 mt-1">
-            Bulles d’alertes administratives, échéances de contrats, paiements en attente et signaux Ocean AI.
+            Administrative alerts, contract expirations, pending crew payments, and Ocean AI insights.
           </p>
         </div>
 
@@ -67,7 +67,7 @@ export const NotificationsView: React.FC = () => {
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/80 dark:bg-[#07263C]/80 backdrop-blur-xl border border-[#0A4565]/15 dark:border-[#7DDCEB]/20 text-xs sm:text-sm font-semibold hover:border-[#16C5C0] cursor-pointer self-start sm:self-auto transition-colors"
         >
           <CheckCheck className="w-4 h-4 text-[#16C5C0]" />
-          <span>Tout marquer comme lu</span>
+          <span>Mark all as read</span>
         </MagneticButton>
       </div>
 
@@ -139,7 +139,7 @@ export const NotificationsView: React.FC = () => {
                       <div className="flex flex-wrap items-center gap-2 text-sm font-semibold">
                         <span>{n.title}</span>
                         {!n.read && (
-                          <span className="text-[11px] font-semibold text-[#16C5C0]">· Nouveau</span>
+                          <span className="text-[11px] font-semibold text-[#16C5C0]">· New</span>
                         )}
                       </div>
                       <p className="text-xs sm:text-sm text-[#0A4565]/80 dark:text-[#F8FAFC]/75 mt-1">
@@ -158,7 +158,7 @@ export const NotificationsView: React.FC = () => {
                         onClick={() => markNotificationRead(n.id)}
                         className="px-3 py-2 rounded-xl text-xs font-medium bg-[#F1F6FA]/90 dark:bg-[#041826]/85 hover:text-[#16C5C0] cursor-pointer transition-colors"
                       >
-                        Marquer lu
+                        Mark read
                       </button>
                     )}
                     {n.targetPage && (
@@ -170,7 +170,7 @@ export const NotificationsView: React.FC = () => {
                         }}
                         className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#16C5C0] hover:bg-[#19d8d2] text-[#062B45] text-xs font-semibold cursor-pointer shadow-sm"
                       >
-                        <span>Ouvrir</span>
+                        <span>Open</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </MagneticButton>
                     )}
@@ -183,7 +183,7 @@ export const NotificationsView: React.FC = () => {
 
         {filtered.length === 0 && (
           <FloatingGlassCard tiltEnabled={false} className="p-10 text-center text-sm opacity-75">
-            Aucune notification dans cette catégorie.
+            No notifications in this category.
           </FloatingGlassCard>
         )}
       </div>

@@ -23,14 +23,14 @@ import { SafeImage } from '../common/SafeImage';
 import { FloatingGlassCard, MagneticButton } from '../common/OceanMotion';
 
 const SPECIES_LIST: FishSpecies[] = [
-  'Bar de ligne',
-  'Dorade royale',
-  'Thon rouge',
-  'Merlu blanc',
-  'Langoustine',
+  'Line-Caught Sea Bass',
+  'Gilthead Bream',
+  'Bluefin Tuna',
+  'European Hake',
+  'Norway Lobster',
   'Sardine',
-  'Maquereau',
-  'Sole commune',
+  'Mackerel',
+  'Common Sole',
 ];
 
 export const FleetAndTripsView: React.FC = () => {
@@ -55,16 +55,16 @@ export const FleetAndTripsView: React.FC = () => {
   const [tripCrewIds, setTripCrewIds] = useState<string[]>(['sai-1', 'sai-4']);
   const [departureDate, setDepartureDate] = useState('2026-11-22T04:30');
   const [returnDate, setReturnDate] = useState('2026-11-24T16:30');
-  const [zone, setZone] = useState('Golfe de Gascogne · Atlantique');
-  const [tripStatus, setTripStatus] = useState<TripStatus>('Terminée');
+  const [zone, setZone] = useState('Bay of Biscay · Atlantic');
+  const [tripStatus, setTripStatus] = useState<TripStatus>('Completed');
   const [catches, setCatches] = useState<Omit<CatchEntry, 'id' | 'totalValue'>[]>([
-    { species: 'Bar de ligne', quantityKg: 950, pricePerKg: 18.5 },
+    { species: 'Line-Caught Sea Bass', quantityKg: 950, pricePerKg: 18.5 },
   ]);
 
   const [vesselModalOpen, setVesselModalOpen] = useState(false);
   const [vName, setVName] = useState('');
   const [vReg, setVReg] = useState('');
-  const [vType, setVType] = useState('Chalutier hauturier');
+  const [vType, setVType] = useState('Deep-Sea Trawler');
   const [vCap, setVCap] = useState(14000);
   const [vPower, setVPower] = useState(550);
   const [vLen, setVLen] = useState(19.5);
@@ -90,7 +90,7 @@ export const FleetAndTripsView: React.FC = () => {
   };
 
   const handleAddCatchRow = () => {
-    setCatches((prev) => [...prev, { species: 'Merlu blanc', quantityKg: 500, pricePerKg: 7.5 }]);
+    setCatches((prev) => [...prev, { species: 'European Hake', quantityKg: 500, pricePerKg: 7.5 }]);
   };
 
   const handleSaveTrip = (e: React.FormEvent) => {
@@ -127,7 +127,7 @@ export const FleetAndTripsView: React.FC = () => {
       enginePowerHp: Number(vPower),
       lengthMeters: Number(vLen),
       homePort: vPort,
-      status: 'Disponible',
+      status: 'Available',
       lastMaintenanceDate: new Date().toISOString().slice(0, 10),
     });
     setVesselModalOpen(false);
@@ -136,7 +136,7 @@ export const FleetAndTripsView: React.FC = () => {
   };
 
   const handleCycleVesselStatus = (vessel: Vessel) => {
-    const order: VesselStatus[] = ['Disponible', 'En mer', 'En maintenance'];
+    const order: VesselStatus[] = ['Available', 'At Sea', 'In Maintenance'];
     const next = order[(order.indexOf(vessel.status) + 1) % order.length];
     updateVessel({ ...vessel, status: next });
   };
@@ -146,10 +146,10 @@ export const FleetAndTripsView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-display font-bold text-2xl sm:text-3xl tracking-tight">
-            Bateaux &amp; Sorties de pêche
+            Vessels &amp; Fishing Trips
           </h1>
           <p className="text-sm text-[#0A4565]/75 dark:text-[#7DDCEB]/80 mt-1">
-            Supervisez la disponibilité de la flotte et enregistrez les marées avec calcul automatique des recettes.
+            Monitor fleet availability and log sea trips with automated catch revenue estimation.
           </p>
         </div>
 
@@ -160,7 +160,7 @@ export const FleetAndTripsView: React.FC = () => {
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/80 dark:bg-[#07263C]/80 backdrop-blur-xl border border-[#0A4565]/15 dark:border-[#7DDCEB]/20 text-sm font-semibold hover:border-[#16C5C0] transition-colors cursor-pointer"
           >
             <Ship className="w-4 h-4 text-[#16C5C0]" />
-            <span>Ajouter un bateau</span>
+            <span>Add Vessel</span>
           </button>
 
           <MagneticButton
@@ -177,7 +177,7 @@ export const FleetAndTripsView: React.FC = () => {
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#16C5C0] hover:bg-[#19d6d1] text-[#062B45] font-semibold text-sm shadow-lg shadow-[#16C5C0]/25 transition-colors cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Enregistrer une sortie</span>
+            <span>Log Fishing Trip</span>
           </MagneticButton>
         </div>
       </div>
@@ -194,7 +194,7 @@ export const FleetAndTripsView: React.FC = () => {
                 : 'text-[#0A4565]/75 dark:text-[#7DDCEB]/80'
             }`}
           >
-            Sorties de pêche ({trips.length})
+            Fishing Trips ({trips.length})
           </button>
           <button
             type="button"
@@ -205,7 +205,7 @@ export const FleetAndTripsView: React.FC = () => {
                 : 'text-[#0A4565]/75 dark:text-[#7DDCEB]/80'
             }`}
           >
-            Flotte de navires ({vessels.length})
+            Vessel Fleet ({vessels.length})
           </button>
         </div>
 
@@ -213,18 +213,18 @@ export const FleetAndTripsView: React.FC = () => {
           <select
             value={tripStatusFilter}
             onChange={(e) => setTripStatusFilter(e.target.value)}
-            aria-label="Filtrer les sorties par statut"
+            aria-label="Filter trips by status"
             className="px-3.5 py-2 rounded-xl bg-white/80 dark:bg-[#07263C]/80 backdrop-blur-xl border border-[#0A4565]/12 dark:border-[#7DDCEB]/18 text-xs sm:text-sm"
           >
-            <option value="ALL">Toutes les sorties</option>
-            <option value="En cours">En cours</option>
-            <option value="Terminée">Terminées</option>
-            <option value="Planifiée">Planifiées</option>
+            <option value="ALL">All Trips</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+            <option value="Scheduled">Scheduled</option>
           </select>
         )}
       </div>
 
-      {/* TAB 1: SORTIES DE PÊCHE */}
+      {/* TAB 1: FISHING TRIPS */}
       {activeTab === 'trips' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {filteredTrips.map((trip, idx) => {
@@ -245,7 +245,7 @@ export const FleetAndTripsView: React.FC = () => {
                         <span>{trip.status}</span>
                       </div>
                       <h2 className="font-display font-bold text-lg sm:text-xl mt-1">
-                        {vessel?.name || 'Navire inconnu'}
+                        {vessel?.name || 'Unknown Vessel'}
                       </h2>
                       <div className="text-xs text-[#0A4565]/70 dark:text-[#7DDCEB]/75 flex items-center gap-1.5 mt-1">
                         <Compass className="w-3.5 h-3.5 text-[#16C5C0]" />
@@ -255,10 +255,10 @@ export const FleetAndTripsView: React.FC = () => {
 
                     <div className="text-right font-mono tabular-nums">
                       <div className="text-lg font-bold text-[#0A4565] dark:text-[#16C5C0]">
-                        {trip.estimatedRevenue.toLocaleString('fr-FR')} €
+                        €{trip.estimatedRevenue.toLocaleString('en-US')}
                       </div>
                       <div className="text-xs text-[#0A4565]/65 dark:text-[#7DDCEB]/75">
-                        {trip.totalCatchKg.toLocaleString('fr-FR')} kg
+                        {trip.totalCatchKg.toLocaleString('en-US')} kg
                       </div>
                     </div>
                   </div>
@@ -274,8 +274,8 @@ export const FleetAndTripsView: React.FC = () => {
                           {c.species}
                         </span>
                         <span className="font-mono tabular-nums">
-                          {c.quantityKg.toLocaleString('fr-FR')} kg × {c.pricePerKg.toFixed(2)} € ={' '}
-                          <strong>{c.totalValue.toLocaleString('fr-FR')} €</strong>
+                          {c.quantityKg.toLocaleString('en-US')} kg × €{c.pricePerKg.toFixed(2)} ={' '}
+                          <strong>€{c.totalValue.toLocaleString('en-US')}</strong>
                         </span>
                       </div>
                     ))}
@@ -286,18 +286,18 @@ export const FleetAndTripsView: React.FC = () => {
                   <div className="flex items-center gap-1.5 text-[#0A4565]/75 dark:text-[#7DDCEB]/80">
                     <Users className="w-3.5 h-3.5" />
                     <span>
-                      {crewMembers.length} marins ({crewMembers.map((m) => m.lastName).join(', ')})
+                      {crewMembers.length} crew ({crewMembers.map((m) => m.lastName).join(', ')})
                     </span>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {trip.status === 'En cours' && (
+                    {trip.status === 'In Progress' && (
                       <button
                         type="button"
-                        onClick={() => updateTripStatus(trip.id, 'Terminée')}
+                        onClick={() => updateTripStatus(trip.id, 'Completed')}
                         className="px-3 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-semibold cursor-pointer"
                       >
-                        Clôturer marée
+                        Close Trip
                       </button>
                     )}
                     <button
@@ -305,7 +305,7 @@ export const FleetAndTripsView: React.FC = () => {
                       onClick={() => setSelectedTrip(trip)}
                       className="px-3 py-1.5 rounded-lg bg-white/70 dark:bg-[#041826]/70 font-semibold hover:text-[#16C5C0] cursor-pointer"
                     >
-                      Détails
+                      Details
                     </button>
                   </div>
                 </div>
@@ -315,7 +315,7 @@ export const FleetAndTripsView: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 2: FLOTTE DE NAVIRES */}
+      {/* TAB 2: VESSEL FLEET */}
       {activeTab === 'vessels' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {vessels.map((vessel, idx) => {
@@ -341,11 +341,11 @@ export const FleetAndTripsView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleCycleVesselStatus(vessel)}
-                        title="Cliquer pour modifier la disponibilité"
+                        title="Click to update vessel status"
                         className={`text-xs font-semibold cursor-pointer ${
-                          vessel.status === 'Disponible'
+                          vessel.status === 'Available'
                             ? 'text-emerald-600 dark:text-emerald-400'
-                            : vessel.status === 'En mer'
+                            : vessel.status === 'At Sea'
                             ? 'text-[#16C5C0]'
                             : 'text-amber-600 dark:text-amber-400'
                         }`}
@@ -355,30 +355,30 @@ export const FleetAndTripsView: React.FC = () => {
                     </div>
                     <h2 className="font-display font-bold text-xl mt-0.5">{vessel.name}</h2>
                     <div className="text-xs text-[#0A4565]/75 dark:text-[#7DDCEB]/75">
-                      {vessel.type} · Port d’attache : {vessel.homePort}
+                      {vessel.type} · Home Port: {vessel.homePort}
                     </div>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 pt-3 border-t border-[#0A4565]/10 dark:border-[#7DDCEB]/10 text-xs font-mono tabular-nums">
                     <div>
-                      <div className="text-[10px] font-sans opacity-65">Capacité</div>
+                      <div className="text-[10px] font-sans opacity-65">Capacity</div>
                       <div className="font-semibold">{(vessel.capacityKg / 1000).toFixed(1)} T</div>
                     </div>
                     <div>
-                      <div className="text-[10px] font-sans opacity-65">Puissance</div>
-                      <div className="font-semibold">{vessel.enginePowerHp} CV</div>
+                      <div className="text-[10px] font-sans opacity-65">Power</div>
+                      <div className="font-semibold">{vessel.enginePowerHp} HP</div>
                     </div>
                     <div>
-                      <div className="text-[10px] font-sans opacity-65">Sorties</div>
+                      <div className="text-[10px] font-sans opacity-65">Trips</div>
                       <div className="font-semibold">{vesselTripsCount}</div>
                     </div>
                   </div>
 
                   <div className="text-xs text-[#0A4565]/70 dark:text-[#F8FAFC]/65 flex items-center justify-between">
                     <span>
-                      Patron : {captain ? `${captain.firstName} ${captain.lastName}` : 'À désigner'}
+                      Captain: {captain ? `${captain.firstName} ${captain.lastName}` : 'Unassigned'}
                     </span>
-                    <span className="text-[11px]">Révision : {vessel.lastMaintenanceDate}</span>
+                    <span className="text-[11px]">Service: {vessel.lastMaintenanceDate}</span>
                   </div>
                 </div>
               </FloatingGlassCard>
@@ -387,7 +387,7 @@ export const FleetAndTripsView: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL: DÉTAIL D'UNE SORTIE */}
+      {/* MODAL: TRIP DETAILS */}
       {selectedTrip && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
@@ -414,13 +414,13 @@ export const FleetAndTripsView: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-3 text-xs p-3.5 rounded-2xl bg-[#F1F6FA] dark:bg-[#041826]">
               <div>
-                <div className="opacity-65">Départ</div>
+                <div className="opacity-65">Departure</div>
                 <div className="font-mono font-semibold mt-0.5">
                   {selectedTrip.departureDate.replace('T', ' ')}
                 </div>
               </div>
               <div>
-                <div className="opacity-65">Retour</div>
+                <div className="opacity-65">Return</div>
                 <div className="font-mono font-semibold mt-0.5">
                   {selectedTrip.returnDate.replace('T', ' ')}
                 </div>
@@ -428,7 +428,7 @@ export const FleetAndTripsView: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <div className="text-xs font-semibold">Détail des captures</div>
+              <div className="text-xs font-semibold">Catch Breakdown</div>
               {selectedTrip.catches.map((c) => (
                 <div
                   key={c.id}
@@ -436,7 +436,7 @@ export const FleetAndTripsView: React.FC = () => {
                 >
                   <span>{c.species}</span>
                   <span className="font-mono tabular-nums">
-                    {c.quantityKg} kg · {c.totalValue.toLocaleString('fr-FR')} €
+                    {c.quantityKg} kg · €{c.totalValue.toLocaleString('en-US')}
                   </span>
                 </div>
               ))}
@@ -453,21 +453,21 @@ export const FleetAndTripsView: React.FC = () => {
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#16C5C0] text-[#062B45] font-semibold text-xs cursor-pointer"
               >
                 <Wallet className="w-4 h-4" />
-                <span>Calculer &amp; voir les parts équipage</span>
+                <span>Calculate &amp; View Crew Shares</span>
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedTrip(null)}
                 className="px-4 py-2 rounded-xl text-xs font-semibold hover:bg-[#0A4565]/10 cursor-pointer"
               >
-                Fermer
+                Close
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* MODAL: ENREGISTRER UNE NOUVELLE SORTIE */}
+      {/* MODAL: LOG NEW FISHING TRIP */}
       {tripModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
@@ -481,7 +481,7 @@ export const FleetAndTripsView: React.FC = () => {
             <div className="flex items-center justify-between">
               <h2 className="font-display font-bold text-xl flex items-center gap-2">
                 <Anchor className="w-5 h-5 text-[#16C5C0]" />
-                <span>Enregistrer une sortie de pêche</span>
+                <span>Log a Fishing Trip</span>
               </h2>
               <button
                 type="button"
@@ -494,7 +494,7 @@ export const FleetAndTripsView: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label className="block text-xs font-semibold mb-1">Navire</label>
+                <label className="block text-xs font-semibold mb-1">Vessel</label>
                 <select
                   value={tripVesselId}
                   onChange={(e) => setTripVesselId(e.target.value)}
@@ -508,19 +508,19 @@ export const FleetAndTripsView: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1">Statut de la sortie</label>
+                <label className="block text-xs font-semibold mb-1">Trip Status</label>
                 <select
                   value={tripStatus}
                   onChange={(e) => setTripStatus(e.target.value as TripStatus)}
                   className="w-full px-3 py-2 rounded-xl bg-[#F1F6FA] dark:bg-[#041826] border border-[#0A4565]/15 dark:border-[#7DDCEB]/15 text-sm"
                 >
-                  <option value="Terminée">Terminée (débarquée)</option>
-                  <option value="En cours">En cours (en mer)</option>
-                  <option value="Planifiée">Planifiée</option>
+                  <option value="Completed">Completed (landed)</option>
+                  <option value="In Progress">In Progress (at sea)</option>
+                  <option value="Scheduled">Scheduled</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1">Date de départ</label>
+                <label className="block text-xs font-semibold mb-1">Departure Date</label>
                 <input
                   type="datetime-local"
                   value={departureDate}
@@ -529,7 +529,7 @@ export const FleetAndTripsView: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1">Date de retour</label>
+                <label className="block text-xs font-semibold mb-1">Return Date</label>
                 <input
                   type="datetime-local"
                   value={returnDate}
@@ -538,7 +538,7 @@ export const FleetAndTripsView: React.FC = () => {
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold mb-1">Zone de pêche</label>
+                <label className="block text-xs font-semibold mb-1">Fishing Zone</label>
                 <input
                   required
                   value={zone}
@@ -550,7 +550,7 @@ export const FleetAndTripsView: React.FC = () => {
 
             <div>
               <label className="block text-xs font-semibold mb-2">
-                Sélection de l’équipage ({tripCrewIds.length} sélectionnés)
+                Crew Selection ({tripCrewIds.length} selected)
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {sailors.map((s) => {
@@ -576,13 +576,13 @@ export const FleetAndTripsView: React.FC = () => {
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="text-xs font-semibold">Captures par espèce</label>
+                <label className="text-xs font-semibold">Catches by Species</label>
                 <button
                   type="button"
                   onClick={handleAddCatchRow}
                   className="text-xs font-semibold text-[#16C5C0] hover:underline cursor-pointer"
                 >
-                  + Ajouter une espèce
+                  + Add Species
                 </button>
               </div>
               <div className="space-y-2">
@@ -638,7 +638,7 @@ export const FleetAndTripsView: React.FC = () => {
                       type="button"
                       onClick={() => setCatches((prev) => prev.filter((_, i) => i !== idx))}
                       className="col-span-1 p-1.5 text-red-500 cursor-pointer"
-                      aria-label="Retirer ligne"
+                      aria-label="Remove row"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -646,9 +646,9 @@ export const FleetAndTripsView: React.FC = () => {
                 ))}
               </div>
               <div className="mt-3 p-3 rounded-xl bg-[#16C5C0]/12 flex items-center justify-between text-xs sm:text-sm font-mono tabular-nums">
-                <span>Total capturé : {tripPreviewTotals.kg.toLocaleString('fr-FR')} kg</span>
+                <span>Total Catch: {tripPreviewTotals.kg.toLocaleString('en-US')} kg</span>
                 <span className="font-bold text-[#0A4565] dark:text-[#16C5C0]">
-                  Recette estimée : {tripPreviewTotals.rev.toLocaleString('fr-FR')} €
+                  Estimated Revenue: €{tripPreviewTotals.rev.toLocaleString('en-US')}
                 </span>
               </div>
             </div>
@@ -659,20 +659,20 @@ export const FleetAndTripsView: React.FC = () => {
                 onClick={() => setTripModalOpen(false)}
                 className="px-4 py-2 rounded-xl text-sm font-medium cursor-pointer"
               >
-                Annuler
+                Cancel
               </button>
               <button
                 type="submit"
                 className="px-5 py-2.5 rounded-xl bg-[#16C5C0] text-[#062B45] font-semibold text-sm cursor-pointer"
               >
-                Enregistrer la sortie
+                Save Trip
               </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* MODAL: AJOUTER UN BATEAU */}
+      {/* MODAL: ADD VESSEL */}
       {vesselModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
@@ -684,7 +684,7 @@ export const FleetAndTripsView: React.FC = () => {
             className="relative z-10 w-full max-w-md rounded-3xl bg-white/95 dark:bg-[#062439]/95 backdrop-blur-xl border border-[#0A4565]/15 dark:border-[#7DDCEB]/20 p-6 shadow-2xl space-y-4"
           >
             <div className="flex items-center justify-between">
-              <h2 className="font-display font-bold text-xl">Ajouter un navire</h2>
+              <h2 className="font-display font-bold text-xl">Add Vessel</h2>
               <button
                 type="button"
                 onClick={() => setVesselModalOpen(false)}
@@ -695,18 +695,18 @@ export const FleetAndTripsView: React.FC = () => {
             </div>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold mb-1">Nom du bateau</label>
+                <label className="block text-xs font-semibold mb-1">Vessel Name</label>
                 <input
                   required
                   value={vName}
                   onChange={(e) => setVName(e.target.value)}
-                  placeholder="Ex. Vent d’Ouest"
+                  placeholder="e.g. Western Horizon"
                   className="w-full px-3 py-2 rounded-xl bg-[#F1F6FA] dark:bg-[#041826] text-sm"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold mb-1">Immatriculation</label>
+                  <label className="block text-xs font-semibold mb-1">Registration</label>
                   <input
                     required
                     value={vReg}
@@ -716,7 +716,7 @@ export const FleetAndTripsView: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1">Port d’attache</label>
+                  <label className="block text-xs font-semibold mb-1">Home Port</label>
                   <input
                     required
                     value={vPort}
@@ -726,7 +726,7 @@ export const FleetAndTripsView: React.FC = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1">Type de navire</label>
+                <label className="block text-xs font-semibold mb-1">Vessel Type</label>
                 <input
                   required
                   value={vType}
@@ -736,7 +736,7 @@ export const FleetAndTripsView: React.FC = () => {
               </div>
               <div className="grid grid-cols-3 gap-2.5">
                 <div>
-                  <label className="block text-xs font-semibold mb-1">Capacité (kg)</label>
+                  <label className="block text-xs font-semibold mb-1">Capacity (kg)</label>
                   <input
                     type="number"
                     value={vCap}
@@ -745,7 +745,7 @@ export const FleetAndTripsView: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1">Puissance (CV)</label>
+                  <label className="block text-xs font-semibold mb-1">Power (HP)</label>
                   <input
                     type="number"
                     value={vPower}
@@ -754,7 +754,7 @@ export const FleetAndTripsView: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1">Longueur (m)</label>
+                  <label className="block text-xs font-semibold mb-1">Length (m)</label>
                   <input
                     type="number"
                     step="0.1"
@@ -771,13 +771,13 @@ export const FleetAndTripsView: React.FC = () => {
                 onClick={() => setVesselModalOpen(false)}
                 className="px-4 py-2 rounded-xl text-sm cursor-pointer"
               >
-                Annuler
+                Cancel
               </button>
               <button
                 type="submit"
                 className="px-5 py-2.5 rounded-xl bg-[#16C5C0] text-[#062B45] font-semibold text-sm cursor-pointer"
               >
-                Ajouter le navire
+                Add Vessel
               </button>
             </div>
           </form>

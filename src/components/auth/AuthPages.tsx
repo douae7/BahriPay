@@ -12,10 +12,10 @@ import { ThemeTogglePill } from '../common/ThemeTogglePill';
 type AuthMode = 'login' | 'register' | 'forgot';
 
 const ROLE_OPTIONS: { role: UserRole; label: string; scope: string }[] = [
-  { role: 'ARMATEUR', label: 'Armateur / Administrateur', scope: 'Contrôle total flotte, marins & finances' },
-  { role: 'CAPITAINE', label: 'Capitaine de navire', scope: 'Sorties de pêche, prises & équipage' },
-  { role: 'FINANCIER', label: 'Gestionnaire financier', scope: 'Ventes, dépenses & fiches de paie' },
-  { role: 'OBSERVATEUR', label: 'Observateur / Audit', scope: 'Consultation & exports rapports' },
+  { role: 'ARMATEUR', label: 'Shipowner / Admin', scope: 'Full fleet, crew & finance control' },
+  { role: 'CAPITAINE', label: 'Vessel Captain', scope: 'Fishing trips, catches & crew' },
+  { role: 'FINANCIER', label: 'Finance Manager', scope: 'Sales, expenses & pay slips' },
+  { role: 'OBSERVATEUR', label: 'Observer / Audit', scope: 'Read-only & report exports' },
 ];
 
 const ROLE_DEMO_EMAILS: Record<UserRole, string> = {
@@ -50,7 +50,7 @@ export const AuthPages: React.FC = () => {
     if (mode === 'forgot') {
       if (!email.includes('@')) {
         setIsError(true);
-        setFeedback('Veuillez saisir une adresse e-mail valide.');
+        setFeedback('Please enter a valid email address.');
         return;
       }
       try {
@@ -58,7 +58,7 @@ export const AuthPages: React.FC = () => {
         setFeedback(msg);
       } catch (err) {
         setIsError(true);
-        setFeedback(err instanceof Error ? err.message : 'Erreur lors de la demande.');
+        setFeedback(err instanceof Error ? err.message : 'Unable to process request.');
       }
       return;
     }
@@ -66,21 +66,21 @@ export const AuthPages: React.FC = () => {
     if (mode === 'register') {
       if (!fullName.trim() || !email.includes('@') || password.length < 6) {
         setIsError(true);
-        setFeedback('Veuillez saisir votre nom complet, un e-mail valide et un mot de passe (6 caractères min.).');
+        setFeedback('Please enter your full name, a valid email, and a password (min. 6 characters).');
         return;
       }
       try {
         await registerAccount(fullName.trim(), email.trim(), password, selectedRole);
       } catch (err) {
         setIsError(true);
-        setFeedback(err instanceof Error ? err.message : 'Impossible de créer le compte.');
+        setFeedback(err instanceof Error ? err.message : 'Unable to create account.');
       }
       return;
     }
 
     if (!email.includes('@') || !password.trim()) {
       setIsError(true);
-      setFeedback('Veuillez saisir vos identifiants de connexion.');
+      setFeedback('Please enter your sign-in credentials.');
       return;
     }
 
@@ -88,7 +88,7 @@ export const AuthPages: React.FC = () => {
       await loginWithCredentials(email.trim(), password, selectedRole);
     } catch (err) {
       setIsError(true);
-      setFeedback(err instanceof Error ? err.message : 'Identifiants incorrects.');
+      setFeedback(err instanceof Error ? err.message : 'Invalid credentials.');
     }
   };
 
@@ -101,7 +101,7 @@ export const AuthPages: React.FC = () => {
         <div className="absolute inset-0 overflow-hidden">
           <SafeImage
             src="/src/assets/images/auth_ocean_vessel_1795370246430.jpg"
-            alt="Illustration maritime Bahripay"
+            alt="Bahripay maritime vessel"
             className="w-full h-full object-cover scale-[1.32] opacity-80"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#041928] via-[#062B45]/55 to-[#062B45]/75" />
@@ -114,7 +114,7 @@ export const AuthPages: React.FC = () => {
             className="inline-flex items-center gap-2 text-sm font-medium text-[#7DDCEB] hover:text-[#F8FAFC] transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Retour à l’accueil</span>
+            <span>Back to home</span>
           </button>
 
           <ThemeTogglePill onDarkSurface />
@@ -123,10 +123,10 @@ export const AuthPages: React.FC = () => {
         <div className="relative z-10 mt-12 lg:mt-0">
           <BrandLogo lightText size="lg" />
           <h2 className="mt-5 font-display font-bold text-2xl sm:text-3xl leading-tight text-balance">
-            Pilotage sécurisé de vos équipages et armements maritimes
+            Secure oversight for your crews and maritime fleet
           </h2>
           <p className="mt-3 text-sm sm:text-base text-[#F8FAFC]/80 max-w-md leading-relaxed">
-            Architecture Bahripay prête pour Spring Security &amp; JWT avec gestion fine des autorisations selon le grade ou le poste administratif.
+            Role-based access tailored to every sea grade and operational management responsibility.
           </p>
         </div>
       </div>
@@ -142,14 +142,14 @@ export const AuthPages: React.FC = () => {
           >
             <div className="mb-7">
               <h1 className="font-display font-bold text-2xl sm:text-3xl text-[#062B45] dark:text-[#F8FAFC]">
-                {mode === 'login' && 'Connexion à Bahripay'}
-                {mode === 'register' && 'Créer un compte armateur'}
-                {mode === 'forgot' && 'Réinitialiser le mot de passe'}
+                {mode === 'login' && 'Sign in to Bahripay'}
+                {mode === 'register' && 'Create a fleet account'}
+                {mode === 'forgot' && 'Reset your password'}
               </h1>
               <p className="mt-2 text-sm text-[#0A4565]/75 dark:text-[#7DDCEB]/80">
-                {mode === 'login' && 'Accédez au centre de contrôle maritime en temps réel.'}
-                {mode === 'register' && 'Configurez votre premier accès maritime et sélectionnez un rôle.'}
-                {mode === 'forgot' && 'Saisissez votre adresse e-mail professionnelle pour recevoir un lien.'}
+                {mode === 'login' && 'Access your real-time maritime command center.'}
+                {mode === 'register' && 'Set up your maritime workspace and choose your role.'}
+                {mode === 'forgot' && 'Enter your work email address to receive a reset link.'}
               </p>
             </div>
 
@@ -157,7 +157,7 @@ export const AuthPages: React.FC = () => {
               {mode === 'register' && (
                 <div>
                   <label className="block text-xs font-semibold text-[#0A4565] dark:text-[#7DDCEB] mb-1.5">
-                    Nom complet
+                    Full Name
                   </label>
                   <div className="relative">
                     <User className="w-4 h-4 text-[#0A4565]/50 dark:text-[#7DDCEB]/50 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -165,7 +165,7 @@ export const AuthPages: React.FC = () => {
                       type="text"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Ex. Jean-Baptiste Le Gall"
+                      placeholder="e.g. Jean-Baptiste Le Gall"
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/85 dark:bg-[#041826]/85 border border-[#0A4565]/15 dark:border-[#7DDCEB]/20 text-sm focus:outline-none focus:ring-2 focus:ring-[#16C5C0]"
                       required
                     />
@@ -175,7 +175,7 @@ export const AuthPages: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-semibold text-[#0A4565] dark:text-[#7DDCEB] mb-1.5">
-                  Adresse e-mail professionnelle
+                  Work Email Address
                 </label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-[#0A4565]/50 dark:text-[#7DDCEB]/50 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -183,7 +183,7 @@ export const AuthPages: React.FC = () => {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="nom@bahripay-armement.fr"
+                    placeholder="name@bahripay-armement.fr"
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/85 dark:bg-[#041826]/85 border border-[#0A4565]/15 dark:border-[#7DDCEB]/20 text-sm focus:outline-none focus:ring-2 focus:ring-[#16C5C0]"
                     required
                   />
@@ -194,7 +194,7 @@ export const AuthPages: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-xs font-semibold text-[#0A4565] dark:text-[#7DDCEB]">
-                      Mot de passe
+                      Password
                     </label>
                     {mode === 'login' && (
                       <button
@@ -205,7 +205,7 @@ export const AuthPages: React.FC = () => {
                         }}
                         className="text-xs font-medium text-[#16C5C0] hover:underline cursor-pointer"
                       >
-                        Mot de passe oublié ?
+                        Forgot password?
                       </button>
                     )}
                   </div>
@@ -226,7 +226,7 @@ export const AuthPages: React.FC = () => {
                 <div className="pt-2">
                   <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0A4565] dark:text-[#7DDCEB] mb-2">
                     <Shield className="w-3.5 h-3.5 text-[#16C5C0]" />
-                    <span>Rôle &amp; niveau d’autorisation (JWT Spring Security)</span>
+                    <span>Role &amp; Access Level</span>
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {ROLE_OPTIONS.map((opt) => {
@@ -270,12 +270,12 @@ export const AuthPages: React.FC = () => {
                 className="w-full py-3 px-5 rounded-xl bg-[#16C5C0] hover:bg-[#19d6d1] disabled:opacity-60 text-[#062B45] font-semibold text-sm shadow-lg shadow-[#16C5C0]/25 transition-colors cursor-pointer"
               >
                 {isLoading ? (
-                  'Connexion sécurisée en cours...'
+                  'Signing in securely...'
                 ) : (
                   <>
-                    {mode === 'login' && 'Se connecter à Bahripay'}
-                    {mode === 'register' && 'Créer mon compte et accéder'}
-                    {mode === 'forgot' && 'Envoyer le lien de réinitialisation'}
+                    {mode === 'login' && 'Sign in to Bahripay'}
+                    {mode === 'register' && 'Create account & continue'}
+                    {mode === 'forgot' && 'Send reset link'}
                   </>
                 )}
               </MagneticButton>
@@ -284,7 +284,7 @@ export const AuthPages: React.FC = () => {
             <div className="mt-6 pt-6 border-t border-[#0A4565]/10 dark:border-[#7DDCEB]/15 flex items-center justify-between text-xs sm:text-sm">
               {mode === 'login' ? (
                 <>
-                  <span className="text-[#0A4565]/70 dark:text-[#F8FAFC]/65">Nouveau sur Bahripay ?</span>
+                  <span className="text-[#0A4565]/70 dark:text-[#F8FAFC]/65">New to Bahripay?</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -293,12 +293,12 @@ export const AuthPages: React.FC = () => {
                     }}
                     className="font-semibold text-[#16C5C0] hover:underline cursor-pointer"
                   >
-                    Créer un compte
+                    Create an account
                   </button>
                 </>
               ) : (
                 <>
-                  <span className="text-[#0A4565]/70 dark:text-[#F8FAFC]/65">Déjà inscrit ?</span>
+                  <span className="text-[#0A4565]/70 dark:text-[#F8FAFC]/65">Already registered?</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -307,7 +307,7 @@ export const AuthPages: React.FC = () => {
                     }}
                     className="font-semibold text-[#16C5C0] hover:underline cursor-pointer"
                   >
-                    Retour à la connexion
+                    Back to sign in
                   </button>
                 </>
               )}

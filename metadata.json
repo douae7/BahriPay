@@ -1,6 +1,6 @@
 {
   "name": "Bahripay",
-  "description": "Bahripay — Plateforme intelligente de gestion maritime et de pêche : équipages, navires, sorties en mer, répartition financière et analyses Ocean AI.",
+  "description": "Bahripay — Intelligent maritime and fishing management platform: crews, vessels, sea trips, financial share settlements, and Ocean AI analytics.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

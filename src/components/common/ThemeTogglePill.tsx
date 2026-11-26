@@ -22,14 +22,14 @@ export const ThemeTogglePill: React.FC<ThemeTogglePillProps> = ({
   return (
     <div
       role="group"
-      aria-label="Sélecteur de thème clair ou sombre"
+      aria-label="Light or dark theme selector"
       className={`inline-flex items-center p-1 rounded-xl border shadow-sm transition-colors ${containerBg}`}
     >
       <button
         type="button"
         onClick={() => setTheme('light')}
         aria-pressed={!isDark}
-        aria-label="Activer le mode clair"
+        aria-label="Enable light mode"
         className={`relative inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
           !isDark
             ? 'text-[#062B45]'
@@ -46,14 +46,14 @@ export const ThemeTogglePill: React.FC<ThemeTogglePillProps> = ({
           />
         )}
         <Sun className="w-3.5 h-3.5 relative z-10 shrink-0" />
-        {!compact && <span className="relative z-10 hidden sm:inline">Clair</span>}
+        {!compact && <span className="relative z-10 hidden sm:inline">Light</span>}
       </button>
 
       <button
         type="button"
         onClick={() => setTheme('dark')}
         aria-pressed={isDark}
-        aria-label="Activer le mode sombre"
+        aria-label="Enable dark mode"
         className={`relative inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
           isDark
             ? 'text-[#062B45]'
@@ -70,7 +70,7 @@ export const ThemeTogglePill: React.FC<ThemeTogglePillProps> = ({
           />
         )}
         <Moon className="w-3.5 h-3.5 relative z-10 shrink-0" />
-        {!compact && <span className="relative z-10 hidden sm:inline">Sombre</span>}
+        {!compact && <span className="relative z-10 hidden sm:inline">Dark</span>}
       </button>
     </div>
   );

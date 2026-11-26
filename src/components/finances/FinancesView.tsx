@@ -25,22 +25,22 @@ import { ExpenseCategory, FishSpecies, PaymentRecord } from '../../types/maritim
 import { AnimatedNumber, FloatingGlassCard, MagneticButton } from '../common/OceanMotion';
 
 const EXPENSE_CATEGORIES: ExpenseCategory[] = [
-  'Carburant',
-  'Glace',
-  'Nourriture',
-  'Entretien',
-  'Autres',
+  'Fuel',
+  'Ice',
+  'Provisions',
+  'Maintenance',
+  'Other',
 ];
 
 const SPECIES_OPTIONS: FishSpecies[] = [
-  'Bar de ligne',
-  'Dorade royale',
-  'Thon rouge',
-  'Merlu blanc',
-  'Langoustine',
+  'Line-Caught Sea Bass',
+  'Gilthead Bream',
+  'Bluefin Tuna',
+  'European Hake',
+  'Norway Lobster',
   'Sardine',
-  'Maquereau',
-  'Sole commune',
+  'Mackerel',
+  'Common Sole',
 ];
 
 export const FinancesView: React.FC = () => {
@@ -67,8 +67,8 @@ export const FinancesView: React.FC = () => {
   // Add Sale modal
   const [saleModalOpen, setSaleModalOpen] = useState(false);
   const [saleTripId, setSaleTripId] = useState(trips[0]?.id || '');
-  const [saleSpecies, setSaleSpecies] = useState<FishSpecies>('Bar de ligne');
-  const [saleBuyer, setSaleBuyer] = useState('Criée de Concarneau');
+  const [saleSpecies, setSaleSpecies] = useState<FishSpecies>('Line-Caught Sea Bass');
+  const [saleBuyer, setSaleBuyer] = useState('Concarneau Fish Auction');
   const [saleQty, setSaleQty] = useState(400);
   const [salePrice, setSalePrice] = useState(18.5);
 
@@ -76,7 +76,7 @@ export const FinancesView: React.FC = () => {
   const [expenseModalOpen, setExpenseModalOpen] = useState(false);
   const [expVesselId, setExpVesselId] = useState(vessels[0]?.id || '');
   const [expTripId, setExpTripId] = useState('');
-  const [expCategory, setExpCategory] = useState<ExpenseCategory>('Carburant');
+  const [expCategory, setExpCategory] = useState<ExpenseCategory>('Fuel');
   const [expDesc, setExpDesc] = useState('');
   const [expAmount, setExpAmount] = useState(1200);
 
@@ -91,7 +91,7 @@ export const FinancesView: React.FC = () => {
 
   const tripsWithoutPayments = useMemo(() => {
     const settledIds = new Set(payments.map((p) => p.tripId));
-    return trips.filter((t) => t.status === 'Terminée' && !settledIds.has(t.id));
+    return trips.filter((t) => t.status === 'Completed' && !settledIds.has(t.id));
   }, [trips, payments]);
 
   const handleSaveSale = (e: React.FormEvent) => {
@@ -102,7 +102,7 @@ export const FinancesView: React.FC = () => {
       vesselId: trip?.vesselId || vessels[0]?.id || '',
       date: new Date().toISOString().slice(0, 10),
       species: saleSpecies,
-      buyer: saleBuyer.trim() || 'Criée directe',
+      buyer: saleBuyer.trim() || 'Direct Auction',
       quantityKg: Number(saleQty) || 0,
       pricePerKg: Number(salePrice) || 0,
     });
@@ -132,10 +132,10 @@ export const FinancesView: React.FC = () => {
       <div className="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-display font-bold text-2xl sm:text-3xl tracking-tight text-[#062B45] dark:text-[#F8FAFC]">
-            Gestion financière &amp; Répartition à la part
+            Finances &amp; Crew Share Settlements
           </h1>
           <p className="text-sm text-[#0A4565]/75 dark:text-[#7DDCEB]/80 mt-1">
-            Ventes de poissons, charges d’exploitation, calcul transparent des parts et fiches de paiement Bahripay.
+            Fish auction sales, operating costs, transparent share calculation, and Bahripay payment slips.
           </p>
         </div>
 
@@ -151,7 +151,7 @@ export const FinancesView: React.FC = () => {
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/80 dark:bg-[#07263C]/80 backdrop-blur-xl border border-[#0A4565]/15 dark:border-[#7DDCEB]/20 text-sm font-semibold hover:border-[#16C5C0] cursor-pointer transition-colors"
           >
             <Plus className="w-4 h-4 text-[#16C5C0]" />
-            <span>Ajouter une dépense</span>
+            <span>Add Expense</span>
           </MagneticButton>
           <MagneticButton
             type="button"
@@ -164,7 +164,7 @@ export const FinancesView: React.FC = () => {
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#16C5C0] hover:bg-[#19d8d2] text-[#062B45] font-semibold text-sm shadow-lg shadow-[#16C5C0]/25 cursor-pointer transition-colors"
           >
             <Plus className="w-4 h-4" />
-            <span>Enregistrer une vente</span>
+            <span>Record Sale</span>
           </MagneticButton>
         </div>
       </div>
@@ -173,43 +173,43 @@ export const FinancesView: React.FC = () => {
       <div className="no-print grid grid-cols-1 xl:grid-cols-12 gap-6">
         <div className="xl:col-span-5 grid grid-cols-2 gap-4">
           <FloatingGlassCard className="p-5" delay={0.04}>
-            <div className="text-xs text-[#0A4565]/70 dark:text-[#7DDCEB]/75">Recettes totales</div>
+            <div className="text-xs text-[#0A4565]/70 dark:text-[#7DDCEB]/75">Total Revenue</div>
             <div className="mt-2 text-xl sm:text-2xl font-bold text-[#0A4565] dark:text-[#16C5C0]">
-              <AnimatedNumber value={Math.round(kpis.totalRevenue)} suffix=" €" />
+              <AnimatedNumber value={Math.round(kpis.totalRevenue)} prefix="€" />
             </div>
-            <div className="text-[11px] opacity-70 mt-1">{sales.length} ventes criée</div>
+            <div className="text-[11px] opacity-70 mt-1">{sales.length} auction sales</div>
           </FloatingGlassCard>
 
           <FloatingGlassCard className="p-5" delay={0.08}>
-            <div className="text-xs text-[#0A4565]/70 dark:text-[#7DDCEB]/75">Dépenses totales</div>
+            <div className="text-xs text-[#0A4565]/70 dark:text-[#7DDCEB]/75">Total Expenses</div>
             <div className="mt-2 text-xl sm:text-2xl font-bold text-[#062B45] dark:text-[#F8FAFC]">
-              <AnimatedNumber value={Math.round(kpis.totalExpenses)} suffix=" €" />
+              <AnimatedNumber value={Math.round(kpis.totalExpenses)} prefix="€" />
             </div>
-            <div className="text-[11px] opacity-70 mt-1">{expenses.length} écritures</div>
+            <div className="text-[11px] opacity-70 mt-1">{expenses.length} entries</div>
           </FloatingGlassCard>
 
           <FloatingGlassCard className="p-5" delay={0.12}>
-            <div className="text-xs text-[#0A4565]/70 dark:text-[#7DDCEB]/75">Bénéfice net</div>
+            <div className="text-xs text-[#0A4565]/70 dark:text-[#7DDCEB]/75">Net Profit</div>
             <div className="mt-2 text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-              <AnimatedNumber value={Math.round(kpis.netProfit)} suffix=" €" />
+              <AnimatedNumber value={Math.round(kpis.netProfit)} prefix="€" />
             </div>
-            <div className="text-[11px] opacity-70 mt-1">Résultat armement</div>
+            <div className="text-[11px] opacity-70 mt-1">Fleet operating result</div>
           </FloatingGlassCard>
 
           <FloatingGlassCard className="p-5" delay={0.16}>
-            <div className="text-xs text-[#0A4565]/70 dark:text-[#7DDCEB]/75">À régler (équipage)</div>
+            <div className="text-xs text-[#0A4565]/70 dark:text-[#7DDCEB]/75">Due to Crew</div>
             <div className="mt-2 text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400">
-              <AnimatedNumber value={Math.round(kpis.pendingPaymentsAmount)} suffix=" €" />
+              <AnimatedNumber value={Math.round(kpis.pendingPaymentsAmount)} prefix="€" />
             </div>
             <div className="text-[11px] opacity-70 mt-1">
-              {kpis.pendingPaymentsCount} fiches en attente
+              {kpis.pendingPaymentsCount} slips pending
             </div>
           </FloatingGlassCard>
         </div>
 
         <FloatingGlassCard className="xl:col-span-7 p-5" tiltEnabled={false} delay={0.18}>
           <h2 className="font-display font-semibold text-base mb-3 text-[#062B45] dark:text-[#F8FAFC]">
-            Répartition des dépenses par poste
+            Expenses Breakdown by Category
           </h2>
           <div className="h-44 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -228,10 +228,10 @@ export const FinancesView: React.FC = () => {
                   tick={{ fill: axisColor, fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
-                  width={82}
+                  width={90}
                 />
                 <Tooltip
-                  formatter={(v) => [`${Number(v ?? 0).toLocaleString('fr-FR')} €`, 'Montant']}
+                  formatter={(v) => [`€${Number(v ?? 0).toLocaleString('en-US')}`, 'Amount']}
                   contentStyle={{
                     backgroundColor: theme === 'dark' ? '#062B45' : '#FFFFFF',
                     borderColor: 'rgba(22,197,192,0.35)',
@@ -256,9 +256,9 @@ export const FinancesView: React.FC = () => {
       {/* Segmented Module Tabs */}
       <div className="no-print inline-flex flex-wrap items-center gap-1 p-1.5 rounded-2xl bg-white/75 dark:bg-[#07263C]/75 backdrop-blur-xl border border-[#0A4565]/12 dark:border-[#7DDCEB]/18">
         {[
-          { id: 'payments' as const, label: `Répartition & Paiements (${payments.length})` },
-          { id: 'sales' as const, label: `Recettes & Ventes (${sales.length})` },
-          { id: 'expenses' as const, label: `Dépenses (${expenses.length})` },
+          { id: 'payments' as const, label: `Share Splits & Payments (${payments.length})` },
+          { id: 'sales' as const, label: `Revenue & Sales (${sales.length})` },
+          { id: 'expenses' as const, label: `Expenses (${expenses.length})` },
         ].map((item) => {
           const active = tab === item.id;
           return (
@@ -285,7 +285,7 @@ export const FinancesView: React.FC = () => {
         })}
       </div>
 
-      {/* TAB: RÉPARTITION & PAIEMENTS */}
+      {/* TAB: SHARE SPLITS & PAYMENTS */}
       {tab === 'payments' && (
         <div className="no-print space-y-5">
           {/* Configurable Share Rules Panel */}
@@ -299,17 +299,17 @@ export const FinancesView: React.FC = () => {
               </div>
               <div>
                 <h2 className="font-display font-semibold text-base">
-                  Règles de répartition des revenus à la part
+                  Crew Share Distribution Rules
                 </h2>
                 <p className="text-xs text-[#0A4565]/70 dark:text-[#7DDCEB]/75 mt-0.5">
-                  Parts appliquées lors du calcul des nouvelles marées (Capitaine 2.0 · Second/Mécanicien 1.5 · Matelot 1.0).
+                  Share weights applied to new trip settlements (Captain 2.0 · First Mate/Engineer 1.5 · Deckhand 1.0).
                 </p>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-4 text-xs">
               <label className="flex items-center gap-2">
-                <span>Part Équipage :</span>
+                <span>Crew Share:</span>
                 <input
                   type="number"
                   min={20}
@@ -329,7 +329,7 @@ export const FinancesView: React.FC = () => {
               </label>
 
               <span className="font-mono text-[#0A4565]/75 dark:text-[#7DDCEB]/80">
-                Armateur : {shareRule.boatSharePercent}%
+                Shipowner: {shareRule.boatSharePercent}%
               </span>
 
               <label className="flex items-center gap-2 cursor-pointer">
@@ -344,7 +344,7 @@ export const FinancesView: React.FC = () => {
                   }
                   className="accent-[#16C5C0]"
                 />
-                <span>Déduire frais communs avant partage</span>
+                <span>Deduct common expenses before split</span>
               </label>
             </div>
           </FloatingGlassCard>
@@ -352,7 +352,7 @@ export const FinancesView: React.FC = () => {
           {tripsWithoutPayments.length > 0 && (
             <div className="p-4 rounded-2xl bg-[#16C5C0]/12 backdrop-blur-lg border border-[#16C5C0]/35 flex flex-wrap items-center justify-between gap-3 shadow-sm">
               <div className="text-xs sm:text-sm font-medium">
-                {tripsWithoutPayments.length} marée(s) terminée(s) prête(s) pour le calcul des parts équipage :
+                {tripsWithoutPayments.length} completed trip(s) ready for crew share calculation:
               </div>
               <div className="flex flex-wrap gap-2">
                 {tripsWithoutPayments.map((t) => (
@@ -362,7 +362,7 @@ export const FinancesView: React.FC = () => {
                     onClick={() => generateTripPayments(t.id)}
                     className="px-3.5 py-1.5 rounded-xl bg-[#16C5C0] text-[#062B45] font-semibold text-xs cursor-pointer shadow-sm"
                   >
-                    Calculer {t.code}
+                    Calculate {t.code}
                   </MagneticButton>
                 ))}
               </div>
@@ -375,12 +375,12 @@ export const FinancesView: React.FC = () => {
               <table className="w-full text-left border-collapse min-w-[680px]">
                 <thead>
                   <tr className="border-b border-[#0A4565]/10 dark:border-[#7DDCEB]/12 text-xs font-semibold text-[#0A4565]/70 dark:text-[#7DDCEB]/75">
-                    <th className="py-3.5 px-5">Marin &amp; Grade</th>
-                    <th className="py-3.5 px-4">Marée</th>
-                    <th className="py-3.5 px-4">Base nette partagée</th>
-                    <th className="py-3.5 px-4">Pondération</th>
-                    <th className="py-3.5 px-4 text-right">Montant dû</th>
-                    <th className="py-3.5 px-4">Statut</th>
+                    <th className="py-3.5 px-5">Crew Member &amp; Grade</th>
+                    <th className="py-3.5 px-4">Trip</th>
+                    <th className="py-3.5 px-4">Net Shared Base</th>
+                    <th className="py-3.5 px-4">Share Weight</th>
+                    <th className="py-3.5 px-4 text-right">Amount Due</th>
+                    <th className="py-3.5 px-4">Status</th>
                     <th className="py-3.5 px-5 text-right">Actions</th>
                   </tr>
                 </thead>
@@ -391,30 +391,30 @@ export const FinancesView: React.FC = () => {
                       <tr key={pay.id} className="hover:bg-[#16C5C0]/7 transition-colors">
                         <td className="py-3.5 px-5">
                           <div className="font-semibold">
-                            {sailor ? `${sailor.firstName} ${sailor.lastName}` : 'Marin'}
+                            {sailor ? `${sailor.firstName} ${sailor.lastName}` : 'Crew Member'}
                           </div>
                           <div className="text-xs opacity-70">{sailor?.grade}</div>
                         </td>
                         <td className="py-3.5 px-4 text-xs font-mono">{pay.periodLabel}</td>
                         <td className="py-3.5 px-4 text-xs font-mono tabular-nums">
-                          {pay.netDistributable.toLocaleString('fr-FR')} €
+                          €{pay.netDistributable.toLocaleString('en-US')}
                           <div className="text-[11px] opacity-65">
-                            Pool {Math.round(pay.crewPoolAmount).toLocaleString('fr-FR')} €
+                            Pool €{Math.round(pay.crewPoolAmount).toLocaleString('en-US')}
                           </div>
                         </td>
                         <td className="py-3.5 px-4 text-xs font-mono tabular-nums">
-                          {pay.sailorWeight} / {pay.totalCrewWeights} parts
+                          {pay.sailorWeight} / {pay.totalCrewWeights} shares
                         </td>
                         <td className="py-3.5 px-4 text-right font-mono tabular-nums font-bold">
-                          {pay.amountDue.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €
+                          €{pay.amountDue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                         </td>
                         <td className="py-3.5 px-4 text-xs font-semibold">
-                          {pay.status === 'Payé' ? (
+                          {pay.status === 'Paid' ? (
                             <span className="text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1">
-                              <CheckCircle2 className="w-3.5 h-3.5" /> Payé ({pay.paidAt})
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Paid ({pay.paidAt})
                             </span>
                           ) : (
-                            <span className="text-amber-600 dark:text-amber-400">En attente</span>
+                            <span className="text-amber-600 dark:text-amber-400">Pending</span>
                           )}
                         </td>
                         <td className="py-3.5 px-5 text-right">
@@ -425,15 +425,15 @@ export const FinancesView: React.FC = () => {
                               className="px-2.5 py-1.5 rounded-lg bg-[#F1F6FA]/90 dark:bg-[#041826]/90 text-xs font-semibold hover:text-[#16C5C0] inline-flex items-center gap-1 cursor-pointer transition-colors"
                             >
                               <FileText className="w-3.5 h-3.5" />
-                              <span>Fiche</span>
+                              <span>Slip</span>
                             </button>
-                            {pay.status === 'En attente' && (
+                            {pay.status === 'Pending' && (
                               <MagneticButton
                                 type="button"
                                 onClick={() => markPaymentPaid(pay.id)}
                                 className="px-2.5 py-1.5 rounded-lg bg-[#16C5C0] text-[#062B45] text-xs font-semibold cursor-pointer shadow-sm"
                               >
-                                Régler
+                                Settle
                               </MagneticButton>
                             )}
                           </div>
@@ -448,7 +448,7 @@ export const FinancesView: React.FC = () => {
         </div>
       )}
 
-      {/* TAB: RECETTES & VENTES */}
+      {/* TAB: REVENUE & SALES */}
       {tab === 'sales' && (
         <FloatingGlassCard tiltEnabled={false} className="no-print overflow-hidden">
           <div className="overflow-x-auto">
@@ -456,11 +456,11 @@ export const FinancesView: React.FC = () => {
               <thead>
                 <tr className="border-b border-[#0A4565]/10 dark:border-[#7DDCEB]/12 text-xs font-semibold text-[#0A4565]/70 dark:text-[#7DDCEB]/75">
                   <th className="py-3.5 px-5">Date</th>
-                  <th className="py-3.5 px-4">Espèce</th>
-                  <th className="py-3.5 px-4">Acheteur / Criée</th>
-                  <th className="py-3.5 px-4 text-right">Quantité (kg)</th>
-                  <th className="py-3.5 px-4 text-right">Prix / kg</th>
-                  <th className="py-3.5 px-5 text-right">Montant total</th>
+                  <th className="py-3.5 px-4">Species</th>
+                  <th className="py-3.5 px-4">Buyer / Auction</th>
+                  <th className="py-3.5 px-4 text-right">Quantity (kg)</th>
+                  <th className="py-3.5 px-4 text-right">Price / kg</th>
+                  <th className="py-3.5 px-5 text-right">Total Amount</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#0A4565]/10 dark:divide-[#7DDCEB]/10 text-sm">
@@ -470,13 +470,13 @@ export const FinancesView: React.FC = () => {
                     <td className="py-3 px-4 font-semibold">{s.species}</td>
                     <td className="py-3 px-4 text-xs">{s.buyer}</td>
                     <td className="py-3 px-4 text-right font-mono tabular-nums">
-                      {s.quantityKg.toLocaleString('fr-FR')} kg
+                      {s.quantityKg.toLocaleString('en-US')} kg
                     </td>
                     <td className="py-3 px-4 text-right font-mono tabular-nums">
-                      {s.pricePerKg.toFixed(2)} €
+                      €{s.pricePerKg.toFixed(2)}
                     </td>
                     <td className="py-3 px-5 text-right font-mono tabular-nums font-bold text-[#0A4565] dark:text-[#16C5C0]">
-                      {s.totalAmount.toLocaleString('fr-FR')} €
+                      €{s.totalAmount.toLocaleString('en-US')}
                     </td>
                   </tr>
                 ))}
@@ -486,7 +486,7 @@ export const FinancesView: React.FC = () => {
         </FloatingGlassCard>
       )}
 
-      {/* TAB: DÉPENSES */}
+      {/* TAB: EXPENSES */}
       {tab === 'expenses' && (
         <FloatingGlassCard tiltEnabled={false} className="no-print overflow-hidden">
           <div className="overflow-x-auto">
@@ -494,10 +494,10 @@ export const FinancesView: React.FC = () => {
               <thead>
                 <tr className="border-b border-[#0A4565]/10 dark:border-[#7DDCEB]/12 text-xs font-semibold text-[#0A4565]/70 dark:text-[#7DDCEB]/75">
                   <th className="py-3.5 px-5">Date</th>
-                  <th className="py-3.5 px-4">Catégorie</th>
-                  <th className="py-3.5 px-4">Navire</th>
+                  <th className="py-3.5 px-4">Category</th>
+                  <th className="py-3.5 px-4">Vessel</th>
                   <th className="py-3.5 px-4">Description</th>
-                  <th className="py-3.5 px-5 text-right">Montant</th>
+                  <th className="py-3.5 px-5 text-right">Amount</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#0A4565]/10 dark:divide-[#7DDCEB]/10 text-sm">
@@ -507,10 +507,10 @@ export const FinancesView: React.FC = () => {
                     <tr key={exp.id} className="hover:bg-[#16C5C0]/7 transition-colors">
                       <td className="py-3 px-5 font-mono text-xs">{exp.date}</td>
                       <td className="py-3 px-4 font-semibold text-xs">{exp.category}</td>
-                      <td className="py-3 px-4 text-xs">{vessel?.name || 'Flotte'}</td>
+                      <td className="py-3 px-4 text-xs">{vessel?.name || 'Fleet'}</td>
                       <td className="py-3 px-4 text-xs opacity-85">{exp.description}</td>
                       <td className="py-3 px-5 text-right font-mono tabular-nums font-bold">
-                        {exp.amount.toLocaleString('fr-FR')} €
+                        €{exp.amount.toLocaleString('en-US')}
                       </td>
                     </tr>
                   );
@@ -521,7 +521,7 @@ export const FinancesView: React.FC = () => {
         </FloatingGlassCard>
       )}
 
-      {/* MODAL: FICHE DE PAIEMENT MARITIME (PRINTABLE) */}
+      {/* MODAL: MARITIME PAYMENT SLIP (PRINTABLE) */}
       <AnimatePresence>
         {selectedSlip && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -542,16 +542,16 @@ export const FinancesView: React.FC = () => {
               <div className="flex items-start justify-between border-b border-[#0A4565]/12 dark:border-[#7DDCEB]/15 pb-4">
                 <div>
                   <div className="text-xs font-mono text-[#16C5C0]">
-                    BAHRIPAY · FICHE DE RÉPARTITION À LA PART
+                    BAHRIPAY · CREW SHARE SETTLEMENT SLIP
                   </div>
                   <h2 className="font-display font-bold text-xl mt-1">
                     {(() => {
                       const s = sailors.find((m) => m.id === selectedSlip.sailorId);
-                      return s ? `${s.firstName} ${s.lastName}` : 'Marin';
+                      return s ? `${s.firstName} ${s.lastName}` : 'Crew Member';
                     })()}
                   </h2>
                   <div className="text-xs opacity-75">
-                    {selectedSlip.periodLabel} · Matricule{' '}
+                    {selectedSlip.periodLabel} · ID{' '}
                     {sailors.find((m) => m.id === selectedSlip.sailorId)?.registrationNumber}
                   </div>
                 </div>
@@ -566,39 +566,39 @@ export const FinancesView: React.FC = () => {
 
               <div className="space-y-2.5 text-sm">
                 <div className="flex justify-between">
-                  <span className="opacity-75">Recette brute de la marée</span>
+                  <span className="opacity-75">Gross trip revenue</span>
                   <span className="font-mono tabular-nums">
-                    {selectedSlip.grossTripRevenue.toLocaleString('fr-FR')} €
+                    €{selectedSlip.grossTripRevenue.toLocaleString('en-US')}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="opacity-75">Frais communs déduits (carburant, glace, vivres)</span>
+                  <span className="opacity-75">Common expenses deducted (fuel, ice, provisions)</span>
                   <span className="font-mono tabular-nums text-red-500">
-                    - {selectedSlip.commonExpenses.toLocaleString('fr-FR')} €
+                    - €{selectedSlip.commonExpenses.toLocaleString('en-US')}
                   </span>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-[#0A4565]/10 dark:border-[#7DDCEB]/10 font-semibold">
-                  <span>Masse nette partageable</span>
+                  <span>Net distributable pool</span>
                   <span className="font-mono tabular-nums">
-                    {selectedSlip.netDistributable.toLocaleString('fr-FR')} €
+                    €{selectedSlip.netDistributable.toLocaleString('en-US')}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="opacity-75">Masse équipage ({shareRule.crewSharePercent}%)</span>
+                  <span className="opacity-75">Crew pool ({shareRule.crewSharePercent}%)</span>
                   <span className="font-mono tabular-nums">
-                    {selectedSlip.crewPoolAmount.toLocaleString('fr-FR')} €
+                    €{selectedSlip.crewPoolAmount.toLocaleString('en-US')}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="opacity-75">Quote-part individuelle</span>
+                  <span className="opacity-75">Individual share weight</span>
                   <span className="font-mono tabular-nums">
-                    {selectedSlip.sailorWeight} / {selectedSlip.totalCrewWeights} parts
+                    {selectedSlip.sailorWeight} / {selectedSlip.totalCrewWeights} shares
                   </span>
                 </div>
                 <div className="flex justify-between items-center pt-3 border-t border-[#0A4565]/15 dark:border-[#7DDCEB]/20 text-base font-bold">
-                  <span>Net à payer au marin</span>
+                  <span>Net payable to crew member</span>
                   <span className="font-mono tabular-nums text-xl text-[#16C5C0]">
-                    {selectedSlip.amountDue.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €
+                    €{selectedSlip.amountDue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>
@@ -610,9 +610,9 @@ export const FinancesView: React.FC = () => {
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0A4565] text-[#F8FAFC] text-xs font-semibold cursor-pointer"
                 >
                   <Printer className="w-4 h-4" />
-                  <span>Imprimer / PDF</span>
+                  <span>Print / PDF</span>
                 </MagneticButton>
-                {selectedSlip.status === 'En attente' && (
+                {selectedSlip.status === 'Pending' && (
                   <MagneticButton
                     type="button"
                     onClick={() => {
@@ -622,7 +622,7 @@ export const FinancesView: React.FC = () => {
                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#16C5C0] text-[#062B45] text-xs font-semibold cursor-pointer"
                   >
                     <Wallet className="w-4 h-4" />
-                    <span>Valider le paiement</span>
+                    <span>Approve Payment</span>
                   </MagneticButton>
                 )}
               </div>
@@ -631,7 +631,7 @@ export const FinancesView: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* MODAL: ENREGISTRER UNE VENTE */}
+      {/* MODAL: RECORD SALE */}
       <AnimatePresence>
         {saleModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -650,14 +650,14 @@ export const FinancesView: React.FC = () => {
               className="relative z-10 w-full max-w-md rounded-3xl bg-white/95 dark:bg-[#062439]/95 backdrop-blur-2xl border border-[#0A4565]/15 dark:border-[#7DDCEB]/25 p-6 shadow-2xl space-y-4"
             >
               <div className="flex items-center justify-between">
-                <h2 className="font-display font-bold text-xl">Nouvelle vente de poisson</h2>
+                <h2 className="font-display font-bold text-xl">New Fish Sale</h2>
                 <button type="button" onClick={() => setSaleModalOpen(false)} className="cursor-pointer">
                   <X className="w-5 h-5" />
                 </button>
               </div>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-semibold mb-1">Marée associée</label>
+                  <label className="block text-xs font-semibold mb-1">Associated Trip</label>
                   <select
                     value={saleTripId}
                     onChange={(e) => setSaleTripId(e.target.value)}
@@ -671,7 +671,7 @@ export const FinancesView: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1">Espèce</label>
+                  <label className="block text-xs font-semibold mb-1">Species</label>
                   <select
                     value={saleSpecies}
                     onChange={(e) => setSaleSpecies(e.target.value as FishSpecies)}
@@ -685,7 +685,7 @@ export const FinancesView: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1">Acheteur / Criée</label>
+                  <label className="block text-xs font-semibold mb-1">Buyer / Auction</label>
                   <input
                     required
                     value={saleBuyer}
@@ -695,7 +695,7 @@ export const FinancesView: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold mb-1">Quantité (kg)</label>
+                    <label className="block text-xs font-semibold mb-1">Quantity (kg)</label>
                     <input
                       type="number"
                       min={1}
@@ -705,7 +705,7 @@ export const FinancesView: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold mb-1">Prix / kg (€)</label>
+                    <label className="block text-xs font-semibold mb-1">Price / kg (€)</label>
                     <input
                       type="number"
                       step="0.1"
@@ -717,16 +717,16 @@ export const FinancesView: React.FC = () => {
                   </div>
                 </div>
                 <div className="p-3 rounded-xl bg-[#16C5C0]/12 text-xs font-mono flex justify-between">
-                  <span>Recette calculée automatiquement</span>
-                  <strong>{(saleQty * salePrice).toLocaleString('fr-FR')} €</strong>
+                  <span>Automatically calculated revenue</span>
+                  <strong>€{(saleQty * salePrice).toLocaleString('en-US')}</strong>
                 </div>
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <button type="button" onClick={() => setSaleModalOpen(false)} className="px-4 py-2 text-sm cursor-pointer">
-                  Annuler
+                  Cancel
                 </button>
                 <MagneticButton type="submit" className="px-5 py-2.5 rounded-xl bg-[#16C5C0] text-[#062B45] font-semibold text-sm cursor-pointer">
-                  Enregistrer
+                  Save
                 </MagneticButton>
               </div>
             </motion.form>
@@ -734,7 +734,7 @@ export const FinancesView: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* MODAL: AJOUTER UNE DÉPENSE */}
+      {/* MODAL: ADD EXPENSE */}
       <AnimatePresence>
         {expenseModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -753,14 +753,14 @@ export const FinancesView: React.FC = () => {
               className="relative z-10 w-full max-w-md rounded-3xl bg-white/95 dark:bg-[#062439]/95 backdrop-blur-2xl border border-[#0A4565]/15 dark:border-[#7DDCEB]/25 p-6 shadow-2xl space-y-4"
             >
               <div className="flex items-center justify-between">
-                <h2 className="font-display font-bold text-xl">Enregistrer une dépense</h2>
+                <h2 className="font-display font-bold text-xl">Record Expense</h2>
                 <button type="button" onClick={() => setExpenseModalOpen(false)} className="cursor-pointer">
                   <X className="w-5 h-5" />
                 </button>
               </div>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-semibold mb-1">Catégorie</label>
+                  <label className="block text-xs font-semibold mb-1">Category</label>
                   <select
                     value={expCategory}
                     onChange={(e) => setExpCategory(e.target.value as ExpenseCategory)}
@@ -774,7 +774,7 @@ export const FinancesView: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1">Navire</label>
+                  <label className="block text-xs font-semibold mb-1">Vessel</label>
                   <select
                     value={expVesselId}
                     onChange={(e) => setExpVesselId(e.target.value)}
@@ -788,13 +788,13 @@ export const FinancesView: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1">Sortie associée (optionnel)</label>
+                  <label className="block text-xs font-semibold mb-1">Associated Trip (optional)</label>
                   <select
                     value={expTripId}
                     onChange={(e) => setExpTripId(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-[#F1F6FA] dark:bg-[#041826] text-sm"
                   >
-                    <option value="">Charge générale navire</option>
+                    <option value="">General vessel expense</option>
                     {trips.map((t) => (
                       <option key={t.id} value={t.id}>
                         {t.code}
@@ -803,17 +803,17 @@ export const FinancesView: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1">Libellé</label>
+                  <label className="block text-xs font-semibold mb-1">Description</label>
                   <input
                     required
                     value={expDesc}
                     onChange={(e) => setExpDesc(e.target.value)}
-                    placeholder="Ex. Soutage gazole marin"
+                    placeholder="e.g. Marine diesel bunkering"
                     className="w-full px-3 py-2 rounded-xl bg-[#F1F6FA] dark:bg-[#041826] text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1">Montant (€)</label>
+                  <label className="block text-xs font-semibold mb-1">Amount (€)</label>
                   <input
                     type="number"
                     min={1}
@@ -826,10 +826,10 @@ export const FinancesView: React.FC = () => {
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <button type="button" onClick={() => setExpenseModalOpen(false)} className="px-4 py-2 text-sm cursor-pointer">
-                  Annuler
+                  Cancel
                 </button>
                 <MagneticButton type="submit" className="px-5 py-2.5 rounded-xl bg-[#16C5C0] text-[#062B45] font-semibold text-sm cursor-pointer">
-                  Enregistrer
+                  Save
                 </MagneticButton>
               </div>
             </motion.form>

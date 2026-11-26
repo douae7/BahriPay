@@ -36,7 +36,7 @@ import {
 } from '../common/OceanMotion';
 
 const formatEuro = (val: number) =>
-  `${Math.round(val).toLocaleString('fr-FR')} €`;
+  `€${Math.round(val).toLocaleString('en-US')}`;
 
 export const DashboardView: React.FC = () => {
   const {
@@ -104,10 +104,10 @@ export const DashboardView: React.FC = () => {
   const activeVesselPct =
     vessels.length > 0
       ? Math.round(
-          (vessels.filter((v) => v.status !== 'En maintenance').length / vessels.length) * 100
+          (vessels.filter((v) => v.status !== 'In Maintenance').length / vessels.length) * 100
         )
       : 0;
-  const paidCount = payments.filter((p) => p.status === 'Payé').length;
+  const paidCount = payments.filter((p) => p.status === 'Paid').length;
   const paidPct = payments.length > 0 ? Math.round((paidCount / payments.length) * 100) : 100;
 
   const gridStroke = theme === 'dark' ? 'rgba(125,220,235,0.12)' : 'rgba(10,69,101,0.1)';
@@ -117,68 +117,76 @@ export const DashboardView: React.FC = () => {
 
   const kpiCards = [
     {
-      label: 'Total marins',
+      label: 'Total Crew',
       numericValue: kpis.totalSailors,
+      prefix: '',
       suffix: '',
-      sub: 'Équipage inscrit',
+      sub: 'Registered sailors',
       icon: Users,
       route: 'sailors' as const,
     },
     {
-      label: 'Bateaux actifs',
+      label: 'Active Vessels',
       numericValue: kpis.totalVessels,
+      prefix: '',
       suffix: '',
-      sub: `${vessels.filter((v) => v.status === 'En mer').length} en mer actuellement`,
+      sub: `${vessels.filter((v) => v.status === 'At Sea').length} currently at sea`,
       icon: Ship,
       route: 'fleet' as const,
     },
     {
-      label: 'Sorties de pêche',
+      label: 'Fishing Trips',
       numericValue: kpis.totalTrips,
+      prefix: '',
       suffix: '',
-      sub: `${trips.filter((t) => t.status === 'En cours').length} marée en cours`,
+      sub: `${trips.filter((t) => t.status === 'In Progress').length} trip underway`,
       icon: Compass,
       route: 'fleet' as const,
     },
     {
-      label: 'Poissons pêchés',
+      label: 'Total Catch',
       numericValue: kpis.totalCatchKg,
+      prefix: '',
       suffix: ' kg',
-      sub: 'Toutes espèces confondues',
+      sub: 'All species combined',
       icon: Fish,
       route: 'fleet' as const,
     },
     {
-      label: 'Recettes totales',
+      label: 'Total Revenue',
       numericValue: kpis.totalRevenue,
-      suffix: ' €',
-      sub: 'Ventes criée & mareyeurs',
+      prefix: '€',
+      suffix: '',
+      sub: 'Auction & wholesale sales',
       icon: TrendingUp,
       route: 'finances' as const,
       highlight: true,
     },
     {
-      label: 'Dépenses totales',
+      label: 'Total Expenses',
       numericValue: kpis.totalExpenses,
-      suffix: ' €',
-      sub: 'Carburant, glace, entretien',
+      prefix: '€',
+      suffix: '',
+      sub: 'Fuel, ice, maintenance',
       icon: Anchor,
       route: 'finances' as const,
     },
     {
-      label: 'Bénéfice net',
+      label: 'Net Profit',
       numericValue: kpis.netProfit,
-      suffix: ' €',
-      sub: `Marge nette ${marginPct}%`,
+      prefix: '€',
+      suffix: '',
+      sub: `Net margin ${marginPct}%`,
       icon: Wallet,
       route: 'finances' as const,
       highlight: true,
     },
     {
-      label: 'Paiements en attente',
+      label: 'Pending Payments',
       numericValue: kpis.pendingPaymentsAmount,
-      suffix: ' €',
-      sub: `${kpis.pendingPaymentsCount} fiches à régler`,
+      prefix: '€',
+      suffix: '',
+      sub: `${kpis.pendingPaymentsCount} slips to settle`,
       icon: Clock,
       route: 'finances' as const,
     },
@@ -190,10 +198,10 @@ export const DashboardView: React.FC = () => {
       <div className="dashboard-float-panel flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-display font-bold text-2xl sm:text-3xl tracking-tight text-[#062B45] dark:text-[#F8FAFC]">
-            Centre de contrôle Bahripay
+            Bahripay Command Center
           </h1>
           <p className="text-sm text-[#0A4565]/75 dark:text-[#7DDCEB]/80 mt-1">
-            Vue consolidée et flottante des opérations en mer, captures et rentabilité de la flotte.
+            Consolidated live overview of sea operations, catches, and fleet profitability.
           </p>
         </div>
 
@@ -201,7 +209,7 @@ export const DashboardView: React.FC = () => {
           <button
             type="button"
             onClick={handleRefresh}
-            aria-label="Actualiser les indicateurs"
+            aria-label="Refresh indicators"
             className="p-2.5 rounded-xl bg-white/80 dark:bg-[#07263C]/80 backdrop-blur-xl border border-[#0A4565]/12 dark:border-[#7DDCEB]/18 hover:border-[#16C5C0] transition-colors cursor-pointer"
           >
             <RefreshCw className={`w-4 h-4 text-[#16C5C0] ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -209,9 +217,9 @@ export const DashboardView: React.FC = () => {
 
           <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-white/80 dark:bg-[#07263C]/80 backdrop-blur-xl border border-[#0A4565]/12 dark:border-[#7DDCEB]/18">
             {([
-              { id: '3m', label: '3 mois' },
-              { id: '6m', label: '6 mois' },
-              { id: '12m', label: '12 mois' },
+              { id: '3m', label: '3 mo' },
+              { id: '6m', label: '6 mo' },
+              { id: '12m', label: '12 mo' },
             ] as const).map((opt) => (
               <button
                 key={opt.id}
@@ -241,11 +249,11 @@ export const DashboardView: React.FC = () => {
           </div>
           <div>
             <div className="text-sm font-display font-bold text-[#062B45] dark:text-[#F8FAFC]">
-              Passerelle opérationnelle Bahripay
+              Bahripay Operations Bridge
             </div>
             <div className="text-xs text-[#0A4565]/75 dark:text-[#7DDCEB]/80">
-              {vessels.filter((v) => v.status === 'En mer').length} navire(s) actuellement en mer ·{' '}
-              {kpis.pendingPaymentsCount} règlement(s) équipage en attente
+              {vessels.filter((v) => v.status === 'At Sea').length} vessel(s) currently at sea ·{' '}
+              {kpis.pendingPaymentsCount} crew settlement(s) pending
             </div>
           </div>
         </div>
@@ -257,7 +265,7 @@ export const DashboardView: React.FC = () => {
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#16C5C0] hover:bg-[#19d6d1] text-[#062B45] text-xs font-semibold shadow-md shadow-[#16C5C0]/25 cursor-pointer"
           >
             <Compass className="w-3.5 h-3.5" />
-            <span>Sorties &amp; Flotte</span>
+            <span>Fleet &amp; Trips</span>
           </MagneticButton>
           <MagneticButton
             type="button"
@@ -265,7 +273,7 @@ export const DashboardView: React.FC = () => {
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/85 dark:bg-[#041826]/80 border border-[#0A4565]/12 dark:border-[#7DDCEB]/20 hover:border-[#16C5C0] text-xs font-semibold cursor-pointer"
           >
             <Users className="w-3.5 h-3.5 text-[#16C5C0]" />
-            <span>Équipage</span>
+            <span>Crew</span>
           </MagneticButton>
           <MagneticButton
             type="button"
@@ -273,7 +281,7 @@ export const DashboardView: React.FC = () => {
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/85 dark:bg-[#041826]/80 border border-[#0A4565]/12 dark:border-[#7DDCEB]/20 hover:border-[#16C5C0] text-xs font-semibold cursor-pointer"
           >
             <Wallet className="w-3.5 h-3.5 text-[#16C5C0]" />
-            <span>Répartition parts</span>
+            <span>Share Splits</span>
           </MagneticButton>
           <MagneticButton
             type="button"
@@ -289,24 +297,24 @@ export const DashboardView: React.FC = () => {
       {/* Floating Circular Ocean Gauges */}
       <section className="dashboard-float-panel grid grid-cols-1 md:grid-cols-3 gap-4">
         <FloatingCircularStat
-          label="Marge nette armement"
+          label="Fleet Net Margin"
           valueText={formatEuro(kpis.netProfit)}
           percent={marginPct}
-          sublabel="Sur recettes criée"
+          sublabel="On auction revenue"
           floatDelay="0s"
         />
         <FloatingCircularStat
-          label="Disponibilité de la flotte"
-          valueText={`${vessels.filter((v) => v.status !== 'En maintenance').length} / ${vessels.length} navires`}
+          label="Fleet Availability"
+          valueText={`${vessels.filter((v) => v.status !== 'In Maintenance').length} / ${vessels.length} vessels`}
           percent={activeVesselPct}
-          sublabel="Opérationnels ou en mer"
+          sublabel="Ready or at sea"
           floatDelay="0.8s"
         />
         <FloatingCircularStat
-          label="Règlements équipage"
-          valueText={`${paidCount} / ${payments.length} fiches`}
+          label="Crew Settlements"
+          valueText={`${paidCount} / ${payments.length} slips`}
           percent={paidPct}
-          sublabel="Parts soldées"
+          sublabel="Shares settled"
           floatDelay="1.6s"
         />
       </section>
@@ -343,7 +351,7 @@ export const DashboardView: React.FC = () => {
                 {isRefreshing ? (
                   <span className="inline-block w-24 h-7 rounded-lg bg-[#16C5C0]/20 animate-pulse" />
                 ) : (
-                  <AnimatedNumber value={card.numericValue} suffix={card.suffix} />
+                  <AnimatedNumber value={card.numericValue} prefix={card.prefix} suffix={card.suffix} />
                 )}
               </div>
               <div className="mt-1.5 flex items-center justify-between text-xs text-[#0A4565]/65 dark:text-[#F8FAFC]/60">
@@ -361,20 +369,20 @@ export const DashboardView: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
             <div>
               <h2 className="font-display font-semibold text-lg text-[#062B45] dark:text-[#F8FAFC]">
-                Recettes et dépenses mensuelles
+                Monthly Revenue &amp; Expenses
               </h2>
               <p className="text-xs text-[#0A4565]/65 dark:text-[#7DDCEB]/70">
-                Comparatif financier des ventes en criée face aux coûts d’exploitation
+                Financial comparison of fish auction revenue against operating expenses
               </p>
             </div>
             <div className="flex items-center gap-4 text-xs">
               <span className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-sm bg-[#16C5C0]" />
-                Recettes
+                Revenue
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-sm bg-[#0A4565] dark:bg-[#7DDCEB]" />
-                Dépenses
+                Expenses
               </span>
             </div>
           </div>
@@ -413,8 +421,8 @@ export const DashboardView: React.FC = () => {
                     fontSize: '12px',
                   }}
                   formatter={(value, name) => [
-                    `${Number(value ?? 0).toLocaleString('fr-FR')} €`,
-                    name === 'recettes' ? 'Recettes' : 'Dépenses',
+                    `€${Number(value ?? 0).toLocaleString('en-US')}`,
+                    name === 'recettes' ? 'Revenue' : 'Expenses',
                   ]}
                 />
                 <Area
@@ -439,10 +447,10 @@ export const DashboardView: React.FC = () => {
         <FloatingGlassCard tiltEnabled={false} delay={0.08} className="xl:col-span-5 p-5 sm:p-6">
           <div className="mb-5">
             <h2 className="font-display font-semibold text-lg text-[#062B45] dark:text-[#F8FAFC]">
-              Évolution des captures (kg)
+              Monthly Catch Volume (kg)
             </h2>
             <p className="text-xs text-[#0A4565]/65 dark:text-[#7DDCEB]/70">
-              Volume mensuel débarqué par l’ensemble de la flotte
+              Total landed tonnage across the entire fleet
             </p>
           </div>
           <div className="h-72 w-full">
@@ -468,7 +476,7 @@ export const DashboardView: React.FC = () => {
                     borderRadius: '12px',
                     fontSize: '12px',
                   }}
-                  formatter={(value) => [`${Number(value ?? 0).toLocaleString('fr-FR')} kg`, 'Captures']}
+                  formatter={(value) => [`${Number(value ?? 0).toLocaleString('en-US')} kg`, 'Catches']}
                 />
                 <Bar dataKey="captureKg" fill="#16C5C0" radius={[6, 6, 0, 0]} />
               </BarChart>
@@ -482,14 +490,14 @@ export const DashboardView: React.FC = () => {
         <FloatingGlassCard tiltEnabled={false} className="lg:col-span-4 p-5 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display font-semibold text-base sm:text-lg">
-              Rentabilité par navire
+              Profitability by Vessel
             </h2>
             <button
               type="button"
               onClick={() => setRoute('ocean-ai')}
               className="text-xs font-semibold text-[#16C5C0] hover:underline cursor-pointer"
             >
-              Analyse IA
+              AI Analysis
             </button>
           </div>
           <div className="space-y-4">
@@ -512,7 +520,7 @@ export const DashboardView: React.FC = () => {
                 <div className="flex items-center justify-between text-[11px] text-[#0A4565]/65 dark:text-[#F8FAFC]/60">
                   <span>{vessel.homePort} · {vessel.status}</span>
                   <span className="font-mono tabular-nums">
-                    CA {formatEuro(rev)} · Marge {margin}%
+                    Rev {formatEuro(rev)} · Margin {margin}%
                   </span>
                 </div>
               </div>
@@ -523,14 +531,14 @@ export const DashboardView: React.FC = () => {
         <FloatingGlassCard tiltEnabled={false} delay={0.05} className="lg:col-span-5 p-5 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display font-semibold text-base sm:text-lg">
-              Dernières sorties de pêche
+              Recent Fishing Trips
             </h2>
             <button
               type="button"
               onClick={() => setRoute('fleet')}
               className="text-xs font-semibold text-[#16C5C0] hover:underline cursor-pointer"
             >
-              Voir tout
+              View all
             </button>
           </div>
           <div className="divide-y divide-[#0A4565]/10 dark:divide-[#7DDCEB]/10">
@@ -550,7 +558,7 @@ export const DashboardView: React.FC = () => {
                   <div className="text-right shrink-0 font-mono tabular-nums">
                     <div className="text-sm font-semibold">{formatEuro(trip.estimatedRevenue)}</div>
                     <div className="text-xs text-[#0A4565]/65 dark:text-[#7DDCEB]/75">
-                      {trip.totalCatchKg.toLocaleString('fr-FR')} kg
+                      {trip.totalCatchKg.toLocaleString('en-US')} kg
                     </div>
                   </div>
                 </div>
@@ -563,14 +571,14 @@ export const DashboardView: React.FC = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display font-semibold text-base sm:text-lg flex items-center gap-2">
               <Bell className="w-4 h-4 text-[#16C5C0]" />
-              <span>Alertes</span>
+              <span>Alerts</span>
             </h2>
             <button
               type="button"
               onClick={() => setRoute('notifications')}
               className="text-xs font-semibold text-[#16C5C0] hover:underline cursor-pointer"
             >
-              Centre
+              Center
             </button>
           </div>
           <div className="space-y-3">

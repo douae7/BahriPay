@@ -28,20 +28,20 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'dashboard', label: 'Tableau de bord', shortLabel: 'Accueil', icon: LayoutDashboard },
-  { id: 'sailors', label: 'Marins & Contrats', shortLabel: 'Marins', icon: Users },
-  { id: 'fleet', label: 'Bateaux & Sorties', shortLabel: 'Flotte', icon: Ship },
-  { id: 'finances', label: 'Finances & Parts', shortLabel: 'Finances', icon: Wallet },
+  { id: 'dashboard', label: 'Dashboard', shortLabel: 'Home', icon: LayoutDashboard },
+  { id: 'sailors', label: 'Crew & Contracts', shortLabel: 'Crew', icon: Users },
+  { id: 'fleet', label: 'Fleet & Trips', shortLabel: 'Fleet', icon: Ship },
+  { id: 'finances', label: 'Finances & Shares', shortLabel: 'Finances', icon: Wallet },
   { id: 'ocean-ai', label: 'Ocean AI', shortLabel: 'Ocean AI', icon: BrainCircuit },
-  { id: 'reports', label: 'Rapports & Exports', shortLabel: 'Rapports', icon: FileSpreadsheet },
-  { id: 'notifications', label: 'Notifications', shortLabel: 'Alertes', icon: Bell },
+  { id: 'reports', label: 'Reports & Exports', shortLabel: 'Reports', icon: FileSpreadsheet },
+  { id: 'notifications', label: 'Notifications', shortLabel: 'Alerts', icon: Bell },
 ];
 
 const ROLE_LABELS: Record<UserRole, string> = {
-  ARMATEUR: 'Armateur',
-  CAPITAINE: 'Capitaine',
-  FINANCIER: 'Financier',
-  OBSERVATEUR: 'Observateur',
+  ARMATEUR: 'Shipowner',
+  CAPITAINE: 'Captain',
+  FINANCIER: 'Finance',
+  OBSERVATEUR: 'Observer',
 };
 
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -100,7 +100,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
             </div>
 
             {/* Animated Primary Navigation with gliding active indicator */}
-            <nav className="space-y-1.5" aria-label="Navigation principale">
+            <nav className="space-y-1.5" aria-label="Primary navigation">
               {NAV_ITEMS.map((item) => {
                 const Icon = item.icon;
                 const isActive = route === item.id;
@@ -149,21 +149,21 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
             <button
               type="button"
               onClick={() => setRoute('landing')}
-              title="Page d'accueil immersive"
+              title="Immersive landing page"
               className="w-full flex items-center justify-center lg:justify-start gap-3 px-3 py-2 rounded-xl text-xs font-medium text-[#0A4565]/80 dark:text-[#7DDCEB]/85 hover:bg-[#16C5C0]/10 transition-colors cursor-pointer"
             >
               <Home className="w-4 h-4 shrink-0" />
-              <span className="hidden lg:inline truncate">Univers océan</span>
+              <span className="hidden lg:inline truncate">Ocean Home</span>
             </button>
 
             <button
               type="button"
               onClick={resetDemoData}
-              title="Réinitialiser les données de démonstration"
+              title="Reset sample data"
               className="w-full flex items-center justify-center lg:justify-start gap-3 px-3 py-2 rounded-xl text-xs font-medium text-[#0A4565]/75 dark:text-[#F8FAFC]/65 hover:bg-[#16C5C0]/10 transition-colors cursor-pointer"
             >
               <RotateCcw className="w-4 h-4 shrink-0" />
-              <span className="hidden lg:inline truncate">Réinitialiser démo</span>
+              <span className="hidden lg:inline truncate">Reset Data</span>
             </button>
 
             <div className="hidden lg:flex items-center justify-between gap-2 pt-3 mt-2 border-t border-[#0A4565]/10 dark:border-[#7DDCEB]/10">
@@ -181,7 +181,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
               <button
                 type="button"
                 onClick={logout}
-                title="Déconnexion"
+                title="Sign out"
                 className="p-2 rounded-lg text-[#0A4565]/70 dark:text-[#7DDCEB]/70 hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer shrink-0"
               >
                 <LogOut className="w-4 h-4" />
@@ -207,7 +207,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
                 <button
                   type="button"
                   onClick={() => setMobileDrawerOpen(false)}
-                  aria-label="Fermer le menu"
+                  aria-label="Close menu"
                   className="p-2 rounded-xl hover:bg-[#0A4565]/10 dark:hover:bg-[#7DDCEB]/10 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
@@ -252,7 +252,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
                 className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-[#0A4565] dark:text-[#7DDCEB] hover:bg-[#0A4565]/10 cursor-pointer"
               >
                 <Home className="w-4 h-4" />
-                <span>Univers océan</span>
+                <span>Ocean Home</span>
               </button>
               <button
                 type="button"
@@ -260,7 +260,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
                 className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-red-600 dark:text-red-400 hover:bg-red-500/10 cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />
-                <span>Déconnexion</span>
+                <span>Sign Out</span>
               </button>
             </div>
           </div>
@@ -277,7 +277,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
             <button
               type="button"
               onClick={() => setMobileDrawerOpen(true)}
-              aria-label="Ouvrir le menu"
+              aria-label="Open menu"
               className="md:hidden p-2 rounded-xl hover:bg-[#0A4565]/10 dark:hover:bg-[#7DDCEB]/10 cursor-pointer"
             >
               <Menu className="w-5 h-5" />
@@ -297,15 +297,15 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {/* Role Quick Switcher */}
             <select
-              aria-label="Changer de rôle utilisateur"
+              aria-label="Switch user role"
               value={currentUser.role}
               onChange={(e) => loginAsRole(e.target.value as UserRole)}
               className="hidden sm:block text-xs font-medium px-3 py-2 rounded-xl bg-white/70 dark:bg-[#041826]/70 border border-[#0A4565]/12 dark:border-[#7DDCEB]/20 text-[#062B45] dark:text-[#F8FAFC] focus:outline-none focus:ring-2 focus:ring-[#16C5C0] cursor-pointer"
             >
-              <option value="ARMATEUR">Rôle : Armateur</option>
-              <option value="CAPITAINE">Rôle : Capitaine</option>
-              <option value="FINANCIER">Rôle : Financier</option>
-              <option value="OBSERVATEUR">Rôle : Observateur</option>
+              <option value="ARMATEUR">Role: Shipowner</option>
+              <option value="CAPITAINE">Role: Captain</option>
+              <option value="FINANCIER">Role: Finance</option>
+              <option value="OBSERVATEUR">Role: Observer</option>
             </select>
 
             {/* Floating Notification Bubble Trigger */}
@@ -315,7 +315,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
                 whileHover={{ scale: 1.06 }}
                 whileTap={{ scale: 0.94 }}
                 onClick={() => setNotifOpen((v) => !v)}
-                aria-label="Centre de notifications"
+                aria-label="Notifications center"
                 className="relative p-2.5 rounded-xl bg-white/70 dark:bg-[#041826]/70 hover:bg-[#16C5C0]/15 border border-[#0A4565]/10 dark:border-[#7DDCEB]/18 transition-colors cursor-pointer"
               >
                 <Bell className="w-4 h-4" />
@@ -337,13 +337,13 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
                   className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white/95 dark:bg-[#072B44]/95 backdrop-blur-xl border border-[#0A4565]/15 dark:border-[#7DDCEB]/25 shadow-2xl p-4 z-50"
                 >
                   <div className="flex items-center justify-between pb-3 border-b border-[#0A4565]/10 dark:border-[#7DDCEB]/10">
-                    <span className="font-display font-semibold text-sm">Alertes récentes</span>
+                    <span className="font-display font-semibold text-sm">Recent Alerts</span>
                     <button
                       type="button"
                       onClick={() => handleNavigate('notifications')}
                       className="text-xs font-semibold text-[#16C5C0] hover:underline cursor-pointer"
                     >
-                      Tout voir
+                      View all
                     </button>
                   </div>
                   <div className="mt-2 space-y-2 max-h-72 overflow-y-auto">
@@ -370,7 +370,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
               )}
             </div>
 
-            {/* Clair / Sombre Segmented Switch */}
+            {/* Light / Dark Segmented Switch */}
             <ThemeTogglePill />
           </div>
         </header>
@@ -381,14 +381,14 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
             <div className="no-print mb-4 flex flex-col gap-2">
               {isLoading && (
                 <div className="px-4 py-2 rounded-xl bg-white/75 dark:bg-[#062439]/80 backdrop-blur-lg border border-[#16C5C0]/30 text-xs text-[#0A4565] dark:text-[#7DDCEB]">
-                  Synchronisation avec le serveur Spring Boot en cours...
+                  Syncing workspace data...
                 </div>
               )}
               {apiError && (
                 <div className="px-4 py-2.5 rounded-xl bg-amber-500/12 border border-amber-500/35 text-xs text-[#062B45] dark:text-amber-200 flex items-center justify-between gap-3">
                   <span>{apiError}</span>
                   <button type="button" onClick={clearApiFeedback} className="font-semibold underline cursor-pointer">
-                    Fermer
+                    Dismiss
                   </button>
                 </div>
               )}
@@ -407,7 +407,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
         {/* Mobile Bottom Quick Navigation */}
         <nav
-          aria-label="Navigation rapide mobile"
+          aria-label="Mobile quick navigation"
           className="no-print md:hidden fixed bottom-0 inset-x-0 h-14 bg-white/90 dark:bg-[#062439]/92 backdrop-blur-xl border-t border-[#0A4565]/12 dark:border-[#7DDCEB]/18 flex items-center justify-around px-2 z-30"
         >
           {NAV_ITEMS.slice(0, 5).map((item) => {

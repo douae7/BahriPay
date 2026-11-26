@@ -21,16 +21,16 @@ import {
 import { motion } from 'motion/react';
 import { useMaritime } from '../../context/MaritimeContext';
 import { useTheme } from '../../context/ThemeContext';
-import { aiApi, AiAnalysisDTO, extractApiErrorMessage } from '../../services/apiClient';
+import { aiApi, AiAnalysisDTO, extractApiErrorMessage, normalizeMonthLabel } from '../../services/apiClient';
 import { AIMessage } from '../../types/maritime';
 import { FloatingGlassCard, MagneticButton } from '../common/OceanMotion';
 
 const SUGGESTED_QUESTIONS = [
-  'Quel bateau est le plus rentable ?',
-  'Quelle est la moyenne des recettes ce mois-ci ?',
-  'Quelle sortie a généré le plus de bénéfices ?',
-  'Prévoir les revenus du prochain mois.',
-  'Quels sont les principaux postes de dépenses ?',
+  'Which vessel is the most profitable?',
+  'What is the average revenue this month?',
+  'Which trip generated the highest profit?',
+  'Forecast next month’s revenue.',
+  'What are our main expense categories?',
 ];
 
 export const OceanAIView: React.FC = () => {
@@ -50,7 +50,7 @@ export const OceanAIView: React.FC = () => {
         const res = await aiApi.analyse();
         if (active) setBackendAnalysis(res);
       } catch {
-        // Keep local fallback when backend AI endpoint is unavailable
+        // Keep local analytics fallback if unavailable
       }
     })();
     return () => {
@@ -58,7 +58,6 @@ export const OceanAIView: React.FC = () => {
     };
   }, [backendConnected, trips.length, sales.length, expenses.length]);
 
-  // Compute real live metrics from current app state (or Spring Boot /api/ai/analyse)
   const analytics = useMemo(() => {
     const vesselStats = backendAnalysis?.vesselProfitability?.length
       ? backendAnalysis.vesselProfitability.map((v) => ({
@@ -91,7 +90,7 @@ export const OceanAIView: React.FC = () => {
 
     const bestTrip = tripStats[0];
 
-    const expenseTotals = ['Carburant', 'Entretien', 'Glace', 'Nourriture', 'Autres']
+    const expenseTotals = (['Fuel', 'Maintenance', 'Ice', 'Provisions', 'Other'] as const)
       .map((cat) => ({
         category: cat,
         total: expenses.filter((e) => e.category === cat).reduce((s, e) => s + e.amount, 0),
@@ -110,7 +109,7 @@ export const OceanAIView: React.FC = () => {
 
     const forecastSeries = backendAnalysis?.forecastSeries?.length
       ? backendAnalysis.forecastSeries.map((pt) => ({
-          month: pt.month,
+          month: normalizeMonthLabel(pt.month),
           historique: pt.historique != null ? Number(pt.historique) : null,
           prevision: pt.prevision != null ? Number(pt.prevision) : null,
         }))
@@ -121,7 +120,7 @@ export const OceanAIView: React.FC = () => {
             prevision: null as number | null,
           })),
           {
-            month: 'Déc (Est.)',
+            month: 'Dec (Est.)',
             historique: null as number | null,
             prevision: Math.round(meanRecentRev * 1.04),
           },
@@ -131,7 +130,7 @@ export const OceanAIView: React.FC = () => {
             prevision: Math.round(meanRecentRev * 0.96),
           },
           {
-            month: 'Fév (Est.)',
+            month: 'Feb (Est.)',
             historique: null as number | null,
             prevision: Math.round(meanRecentRev * 1.08),
           },
@@ -153,16 +152,16 @@ export const OceanAIView: React.FC = () => {
     {
       id: 'ai-welcome',
       sender: 'assistant',
-      timestamp: 'Maintenant',
+      timestamp: 'Now',
       content:
-        'Bonjour. Je suis Ocean AI de Bahripay. Posez-moi une question sur la rentabilité réelle de vos navires, vos dépenses ou vos prévisions de captures.',
+        'Hello. I am Bahripay Ocean AI. Ask me anything about your fleet profitability, operating expenses, or catch forecasts.',
       highlights: [
         {
-          label: 'Navire leader',
+          label: 'Leading Vessel',
           value: analytics.bestVessel ? analytics.bestVessel.name : '—',
         },
         {
-          label: 'Marge nette globale',
+          label: 'Overall Net Margin',
           value: `${kpis.totalRevenue > 0 ? Math.round((kpis.netProfit / kpis.totalRevenue) * 100) : 0}%`,
         },
       ],
@@ -172,72 +171,72 @@ export const OceanAIView: React.FC = () => {
 
   const buildAnswer = (question: string): AIMessage => {
     const q = question.toLowerCase();
-    const now = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
-    if (q.includes('bateau') || q.includes('rentable') || q.includes('navire')) {
+    if (q.includes('vessel') || q.includes('boat') || q.includes('profitable')) {
       const top = analytics.bestVessel;
       return {
         id: `ai-${Date.now()}`,
         sender: 'assistant',
         timestamp: now,
         content: top
-          ? `D’après l’analyse des ventes et charges enregistrées, « ${top.name} » (${top.registration}) est actuellement le navire le plus rentable avec un bénéfice net de ${top.net.toLocaleString('fr-FR')} € pour ${top.rev.toLocaleString('fr-FR')} € de recettes.`
-          : 'Aucune donnée de navire disponible.',
+          ? `Based on recorded sales and operating expenses, "${top.name}" (${top.registration}) is currently the most profitable vessel with a net profit of €${top.net.toLocaleString('en-US')} on €${top.rev.toLocaleString('en-US')} in revenue.`
+          : 'No vessel data available.',
         highlights: analytics.vesselStats.slice(0, 3).map((v) => ({
           label: v.name,
-          value: `${v.net.toLocaleString('fr-FR')} € net`,
+          value: `€${v.net.toLocaleString('en-US')} net`,
         })),
       };
     }
 
-    if (q.includes('moyenne') || q.includes('recette')) {
+    if (q.includes('average') || q.includes('revenue')) {
       return {
         id: `ai-${Date.now()}`,
         sender: 'assistant',
         timestamp: now,
-        content: `Sur la période en cours, le total des recettes s’élève à ${Math.round(kpis.totalRevenue).toLocaleString('fr-FR')} €, soit une moyenne de ${analytics.avgTripRevenue.toLocaleString('fr-FR')} € par sortie de pêche enregistrée.`,
+        content: `For the current period, total revenue stands at €${Math.round(kpis.totalRevenue).toLocaleString('en-US')}, averaging €${analytics.avgTripRevenue.toLocaleString('en-US')} per recorded fishing trip.`,
         highlights: [
-          { label: 'Recettes mois', value: `${Math.round(kpis.totalRevenue).toLocaleString('fr-FR')} €` },
-          { label: 'Moyenne / sortie', value: `${analytics.avgTripRevenue.toLocaleString('fr-FR')} €` },
+          { label: 'Monthly Revenue', value: `€${Math.round(kpis.totalRevenue).toLocaleString('en-US')}` },
+          { label: 'Average / Trip', value: `€${analytics.avgTripRevenue.toLocaleString('en-US')}` },
         ],
       };
     }
 
-    if (q.includes('sortie') || q.includes('bénéfice') || q.includes('marée')) {
+    if (q.includes('trip') || q.includes('profit') || q.includes('highest')) {
       const bt = analytics.bestTrip;
       return {
         id: `ai-${Date.now()}`,
         sender: 'assistant',
         timestamp: now,
         content: bt
-          ? `La sortie la plus performante est ${bt.code} (${bt.vessel || 'Navire'}), qui a généré ${bt.net.toLocaleString('fr-FR')} € de bénéfice net après déduction de ${bt.exp.toLocaleString('fr-FR')} € de frais de marée.`
-          : 'Aucune sortie enregistrée.',
+          ? `The highest-performing trip is ${bt.code} (${bt.vessel || 'Vessel'}), generating €${bt.net.toLocaleString('en-US')} in net profit after deducting €${bt.exp.toLocaleString('en-US')} in trip expenses.`
+          : 'No trips recorded.',
         highlights: bt
           ? [
-              { label: 'Sortie', value: bt.code },
-              { label: 'Recette brute', value: `${bt.rev.toLocaleString('fr-FR')} €` },
-              { label: 'Bénéfice net', value: `${bt.net.toLocaleString('fr-FR')} €` },
+              { label: 'Trip', value: bt.code },
+              { label: 'Gross Revenue', value: `€${bt.rev.toLocaleString('en-US')}` },
+              { label: 'Net Profit', value: `€${bt.net.toLocaleString('en-US')}` },
             ]
           : undefined,
       };
     }
 
-    if (q.includes('prévoir') || q.includes('prochain') || q.includes('prévision')) {
+    if (q.includes('forecast') || q.includes('next') || q.includes('predict')) {
       const estRev = Math.round(analytics.meanRecentRev * 1.04);
       const estKg = Math.round(analytics.meanRecentCatch * 1.03);
       return {
         id: `ai-${Date.now()}`,
         sender: 'assistant',
         timestamp: now,
-        content: `Basée sur l'historique disponible, Ocean AI estime pour le mois prochain un chiffre d’affaires prévisionnel de ${estRev.toLocaleString('fr-FR')} € pour un volume proche de ${estKg.toLocaleString('fr-FR')} kg.`,
+        content: `Based on available operational history, Ocean AI projects next month’s revenue at approximately €${estRev.toLocaleString('en-US')} for a total catch volume near ${estKg.toLocaleString('en-US')} kg.`,
         highlights: [
-          { label: 'Revenu estimé (Prévision)', value: `${estRev.toLocaleString('fr-FR')} €` },
-          { label: 'Captures prévues', value: `${estKg.toLocaleString('fr-FR')} kg` },
+          { label: 'Estimated Revenue (Forecast)', value: `€${estRev.toLocaleString('en-US')}` },
+          { label: 'Projected Catch', value: `${estKg.toLocaleString('en-US')} kg` },
         ],
       };
     }
 
-    if (q.includes('dépense') || q.includes('poste') || q.includes('coût')) {
+    if (q.includes('expense') || q.includes('cost') || q.includes('fuel') || q.includes('categor')) {
       const topExp = analytics.expenseTotals[0];
       const pct =
         kpis.totalExpenses > 0 ? Math.round((topExp.total / kpis.totalExpenses) * 100) : 0;
@@ -245,10 +244,10 @@ export const OceanAIView: React.FC = () => {
         id: `ai-${Date.now()}`,
         sender: 'assistant',
         timestamp: now,
-        content: `Le premier poste de charge est « ${topExp.category} » avec ${topExp.total.toLocaleString('fr-FR')} € (${pct}% des dépenses totales). Une optimisation des régimes de croisière et du groupage carburant permettrait d’économiser environ 6 à 9% sur ce poste.`,
+        content: `Your top expense category is "${topExp.category}" at €${topExp.total.toLocaleString('en-US')} (${pct}% of total expenses). Optimizing transit cruising speeds and bulk refueling could save an estimated 6–9% on this line item.`,
         highlights: analytics.expenseTotals.slice(0, 3).map((e) => ({
           label: e.category,
-          value: `${e.total.toLocaleString('fr-FR')} €`,
+          value: `€${e.total.toLocaleString('en-US')}`,
         })),
       };
     }
@@ -257,10 +256,10 @@ export const OceanAIView: React.FC = () => {
       id: `ai-${Date.now()}`,
       sender: 'assistant',
       timestamp: now,
-      content: `Analyse globale de votre flotte (${vessels.length} navires, ${trips.length} sorties) : recettes cumulées de ${Math.round(kpis.totalRevenue).toLocaleString('fr-FR')} € pour un bénéfice net de ${Math.round(kpis.netProfit).toLocaleString('fr-FR')} €. Utilisez une des requêtes suggérées pour un focus détaillé.`,
+      content: `Fleet-wide summary (${vessels.length} vessels, ${trips.length} trips): cumulative revenue of €${Math.round(kpis.totalRevenue).toLocaleString('en-US')} and net profit of €${Math.round(kpis.netProfit).toLocaleString('en-US')}. Choose a suggested prompt for a deeper breakdown.`,
       highlights: [
-        { label: 'Bénéfice net', value: `${Math.round(kpis.netProfit).toLocaleString('fr-FR')} €` },
-        { label: 'Volume total', value: `${kpis.totalCatchKg.toLocaleString('fr-FR')} kg` },
+        { label: 'Net Profit', value: `€${Math.round(kpis.netProfit).toLocaleString('en-US')}` },
+        { label: 'Total Volume', value: `${kpis.totalCatchKg.toLocaleString('en-US')} kg` },
       ],
     };
   };
@@ -268,7 +267,7 @@ export const OceanAIView: React.FC = () => {
   const handleSend = async (text: string) => {
     const trimmed = text.trim();
     if (!trimmed || asking) return;
-    const now = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     const userMsg: AIMessage = {
       id: `usr-${Date.now()}`,
       sender: 'user',
@@ -294,7 +293,7 @@ export const OceanAIView: React.FC = () => {
         const errMsg: AIMessage = {
           id: `ai-err-${Date.now()}`,
           sender: 'assistant',
-          content: `Impossible de joindre le module OceanAI Spring Boot : ${extractApiErrorMessage(err)}`,
+          content: `Unable to reach Ocean AI at the moment: ${extractApiErrorMessage(err)}`,
           timestamp: now,
         };
         setMessages((prev) => [...prev, errMsg]);
@@ -313,15 +312,15 @@ export const OceanAIView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header + Explicit Backend/AI Status Banner */}
+      {/* Header + Status Pill */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h1 className="font-display font-bold text-2xl sm:text-3xl tracking-tight flex items-center gap-2.5 text-[#062B45] dark:text-[#F8FAFC]">
             <BrainCircuit className="w-7 h-7 text-[#16C5C0]" />
-            <span>Ocean AI — Intelligence Décisionnelle</span>
+            <span>Ocean AI — Decision Intelligence</span>
           </h1>
           <p className="text-sm text-[#0A4565]/75 dark:text-[#7DDCEB]/80 mt-1">
-            Analyse comparative des navires, projections saisonnières et assistant conversationnel Bahripay.
+            Comparative vessel analysis, seasonal projections, and Bahripay conversational assistant.
           </p>
         </div>
 
@@ -329,8 +328,8 @@ export const OceanAIView: React.FC = () => {
           {asking ? <Loader2 className="w-4 h-4 text-[#16C5C0] shrink-0 animate-spin" /> : <Info className="w-4 h-4 text-[#16C5C0] shrink-0" />}
           <span>
             {backendAnalysis
-              ? `${backendAnalysis.geminiIntegrationStatus} · ${backendAnalysis.historicalTripsCount} marées analysées`
-              : 'Mode analytique local · Prêt pour API Spring Boot / Gemini'}
+              ? `Live intelligence · ${backendAnalysis.historicalTripsCount} trips analyzed`
+              : `Live fleet intelligence · ${trips.length} trips analyzed`}
           </span>
         </div>
       </div>
@@ -348,8 +347,8 @@ export const OceanAIView: React.FC = () => {
                 <BrainCircuit className="w-5 h-5" />
               </div>
               <div>
-                <div className="font-display font-semibold text-sm">Assistant Ocean AI</div>
-                <div className="text-[11px] text-[#7DDCEB]">Analyse de l’armement en direct</div>
+                <div className="font-display font-semibold text-sm">Ocean AI Assistant</div>
+                <div className="text-[11px] text-[#7DDCEB]">Live fleet performance analysis</div>
               </div>
             </div>
           </div>
@@ -416,12 +415,12 @@ export const OceanAIView: React.FC = () => {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Posez une question sur votre flotte..."
+              placeholder="Ask a question about your fleet..."
               className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#F1F6FA]/90 dark:bg-[#041826]/85 border border-[#0A4565]/10 dark:border-[#7DDCEB]/15 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#16C5C0]"
             />
             <MagneticButton
               type="submit"
-              aria-label="Envoyer la question"
+              aria-label="Send question"
               className="p-2.5 rounded-xl bg-[#16C5C0] hover:bg-[#19d8d2] text-[#062B45] cursor-pointer shadow-md shadow-[#16C5C0]/25"
             >
               <Send className="w-4 h-4" />
@@ -437,20 +436,20 @@ export const OceanAIView: React.FC = () => {
               <div>
                 <h2 className="font-display font-semibold text-lg flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-[#16C5C0]" />
-                  <span>Projection des revenus (Simulation 3 mois)</span>
+                  <span>Revenue Projection (3-Month Forecast)</span>
                 </h2>
                 <p className="text-xs opacity-70">
-                  Comparaison entre l’historique récent et l’estimation saisonnière simulée
+                  Comparison between recent actual history and seasonal projection
                 </p>
               </div>
               <div className="flex items-center gap-4 text-xs">
                 <span className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-sm bg-[#0A4565] dark:bg-[#7DDCEB]" />
-                  Historique
+                  Historical
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-sm bg-[#16C5C0]" />
-                  Prévision Démo
+                  Forecast
                 </span>
               </div>
             </div>
@@ -466,7 +465,10 @@ export const OceanAIView: React.FC = () => {
                     tickFormatter={(v) => `${Math.round(v / 1000)}k`}
                   />
                   <Tooltip
-                    formatter={(v) => [`${Number(v ?? 0).toLocaleString('fr-FR')} €`]}
+                    formatter={(v, name) => [
+                      `€${Number(v ?? 0).toLocaleString('en-US')}`,
+                      name === 'historique' ? 'Historical' : 'Forecast',
+                    ]}
                     contentStyle={{
                       backgroundColor: theme === 'dark' ? '#062B45' : '#FFFFFF',
                       borderColor: 'rgba(22,197,192,0.35)',
@@ -500,7 +502,7 @@ export const OceanAIView: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <FloatingGlassCard tiltEnabled={false} className="p-5 rounded-3xl" delay={0.14}>
               <h3 className="font-display font-semibold text-base mb-3">
-                Rentabilité nette par navire
+                Net Profit by Vessel
               </h3>
               <div className="h-44 w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -519,7 +521,7 @@ export const OceanAIView: React.FC = () => {
                       tickFormatter={(v) => `${Math.round(v / 1000)}k`}
                     />
                     <Tooltip
-                      formatter={(v) => [`${Number(v ?? 0).toLocaleString('fr-FR')} €`, 'Net']}
+                      formatter={(v) => [`€${Number(v ?? 0).toLocaleString('en-US')}`, 'Net Profit']}
                       contentStyle={{
                         backgroundColor: theme === 'dark' ? '#062B45' : '#FFFFFF',
                         borderColor: 'rgba(22,197,192,0.35)',
@@ -536,23 +538,23 @@ export const OceanAIView: React.FC = () => {
             <FloatingGlassCard className="p-5 rounded-3xl space-y-3" delay={0.18}>
               <h3 className="font-display font-semibold text-base flex items-center gap-2">
                 <Lightbulb className="w-4 h-4 text-[#16C5C0]" />
-                <span>Recommandations d’optimisation</span>
+                <span>Optimization Recommendations</span>
               </h3>
               <div className="space-y-2.5 text-xs">
                 <div className="p-3 rounded-xl bg-[#F1F6FA]/85 dark:bg-[#041826]/75 border border-[#0A4565]/10 dark:border-[#7DDCEB]/12">
                   <div className="font-semibold text-[#062B45] dark:text-[#F8FAFC]">
-                    Optimisation carburant (Poste n°1)
+                    Fuel Optimization (#1 Cost Driver)
                   </div>
                   <p className="opacity-75 mt-1">
-                    Réduire la vitesse de transit de 1,2 nœud sur les retours de Rochebonne diminue la consommation estimée de 7,5%.
+                    Reducing return transit speed by 1.2 knots from Rochebonne cuts estimated diesel consumption by 7.5%.
                   </p>
                 </div>
                 <div className="p-3 rounded-xl bg-[#F1F6FA]/85 dark:bg-[#041826]/75 border border-[#0A4565]/10 dark:border-[#7DDCEB]/12">
                   <div className="font-semibold text-[#062B45] dark:text-[#F8FAFC]">
-                    Fenêtre de forte activité : Mai – Juillet
+                    Peak Season Window: May – July
                   </div>
                   <p className="opacity-75 mt-1">
-                    Planifier les carénages d’entretien en Janvier–Février pour préserver 100% de disponibilité estivale.
+                    Schedule hull careening and dry-dock maintenance in Jan–Feb to preserve 100% summer availability.
                   </p>
                 </div>
               </div>

@@ -23,11 +23,208 @@ import {
   VesselStatus,
 } from '../types/maritime';
 
-const ACCESS_TOKEN_KEY = 'bahripay_jwt_token';
+const ACCESS_TOKEN_KEY = 'bahripay_auth_token';
 const REFRESH_TOKEN_KEY = 'bahripay_refresh_token';
 
 export const API_CONFIG = {
   baseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
+};
+
+// ============================================================================
+// Bidirectional Enum & Label Mappers (keeps full compatibility with backend)
+// ============================================================================
+
+const GRADE_TO_EN: Record<string, SailorGrade> = {
+  Capitaine: 'Captain',
+  Second: 'First Mate',
+  Mécanicien: 'Engineer',
+  Matelot: 'Deckhand',
+  Mousse: 'Apprentice',
+  Captain: 'Captain',
+  'First Mate': 'First Mate',
+  Engineer: 'Engineer',
+  Deckhand: 'Deckhand',
+  Apprentice: 'Apprentice',
+};
+const GRADE_TO_BE: Record<SailorGrade, string> = {
+  Captain: 'Capitaine',
+  'First Mate': 'Second',
+  Engineer: 'Mécanicien',
+  Deckhand: 'Matelot',
+  Apprentice: 'Mousse',
+};
+
+const SAILOR_STATUS_TO_EN: Record<string, SailorStatus> = {
+  Actif: 'Active',
+  'En mer': 'At Sea',
+  'En congé': 'On Leave',
+  Repos: 'Rest',
+  Active: 'Active',
+  'At Sea': 'At Sea',
+  'On Leave': 'On Leave',
+  Rest: 'Rest',
+};
+const SAILOR_STATUS_TO_BE: Record<SailorStatus, string> = {
+  Active: 'Actif',
+  'At Sea': 'En mer',
+  'On Leave': 'En congé',
+  Rest: 'Repos',
+};
+
+const CONTRACT_TO_EN: Record<string, ContractType> = {
+  'À la part': 'Share Contract',
+  'CDI Maritime': 'Permanent Maritime',
+  'CDD Saisonnier': 'Seasonal Fixed-Term',
+  'Share Contract': 'Share Contract',
+  'Permanent Maritime': 'Permanent Maritime',
+  'Seasonal Fixed-Term': 'Seasonal Fixed-Term',
+};
+const CONTRACT_TO_BE: Record<ContractType, string> = {
+  'Share Contract': 'À la part',
+  'Permanent Maritime': 'CDI Maritime',
+  'Seasonal Fixed-Term': 'CDD Saisonnier',
+};
+
+const DOC_STATUS_TO_EN: Record<string, SailorDocument['status']> = {
+  Valide: 'Valid',
+  Manquant: 'Missing',
+  'À renouveler': 'Renewal Due',
+  Valid: 'Valid',
+  Missing: 'Missing',
+  'Renewal Due': 'Renewal Due',
+};
+const DOC_STATUS_TO_BE: Record<SailorDocument['status'], string> = {
+  Valid: 'Valide',
+  Missing: 'Manquant',
+  'Renewal Due': 'À renouveler',
+};
+
+const ABSENCE_TO_EN: Record<string, SailorAbsence['type']> = {
+  'Congé payé': 'Paid Leave',
+  'Repos compensateur': 'Compensatory Rest',
+  Maladie: 'Medical Leave',
+  'Formation STCW': 'STCW Training',
+  'Paid Leave': 'Paid Leave',
+  'Compensatory Rest': 'Compensatory Rest',
+  'Medical Leave': 'Medical Leave',
+  'STCW Training': 'STCW Training',
+};
+const ABSENCE_TO_BE: Record<SailorAbsence['type'], string> = {
+  'Paid Leave': 'Congé payé',
+  'Compensatory Rest': 'Repos compensateur',
+  'Medical Leave': 'Maladie',
+  'STCW Training': 'Formation STCW',
+};
+
+const VESSEL_STATUS_TO_EN: Record<string, VesselStatus> = {
+  Disponible: 'Available',
+  'En mer': 'At Sea',
+  'En maintenance': 'In Maintenance',
+  Available: 'Available',
+  'At Sea': 'At Sea',
+  'In Maintenance': 'In Maintenance',
+};
+const VESSEL_STATUS_TO_BE: Record<VesselStatus, string> = {
+  Available: 'Disponible',
+  'At Sea': 'En mer',
+  'In Maintenance': 'En maintenance',
+};
+
+const TRIP_STATUS_TO_EN: Record<string, TripStatus> = {
+  'En cours': 'In Progress',
+  Terminée: 'Completed',
+  Planifiée: 'Scheduled',
+  'In Progress': 'In Progress',
+  Completed: 'Completed',
+  Scheduled: 'Scheduled',
+};
+const TRIP_STATUS_TO_BE: Record<TripStatus, string> = {
+  'In Progress': 'En cours',
+  Completed: 'Terminée',
+  Scheduled: 'Planifiée',
+};
+
+const SPECIES_TO_EN: Record<string, FishSpecies> = {
+  'Bar de ligne': 'Line-Caught Sea Bass',
+  'Dorade royale': 'Gilthead Bream',
+  'Thon rouge': 'Bluefin Tuna',
+  'Merlu blanc': 'European Hake',
+  Langoustine: 'Norway Lobster',
+  Sardine: 'Sardine',
+  Maquereau: 'Mackerel',
+  'Sole commune': 'Common Sole',
+  'Line-Caught Sea Bass': 'Line-Caught Sea Bass',
+  'Gilthead Bream': 'Gilthead Bream',
+  'Bluefin Tuna': 'Bluefin Tuna',
+  'European Hake': 'European Hake',
+  'Norway Lobster': 'Norway Lobster',
+  Mackerel: 'Mackerel',
+  'Common Sole': 'Common Sole',
+};
+const SPECIES_TO_BE: Record<FishSpecies, string> = {
+  'Line-Caught Sea Bass': 'Bar de ligne',
+  'Gilthead Bream': 'Dorade royale',
+  'Bluefin Tuna': 'Thon rouge',
+  'European Hake': 'Merlu blanc',
+  'Norway Lobster': 'Langoustine',
+  Sardine: 'Sardine',
+  Mackerel: 'Maquereau',
+  'Common Sole': 'Sole commune',
+};
+
+const EXPENSE_TO_EN: Record<string, ExpenseCategory> = {
+  Carburant: 'Fuel',
+  Glace: 'Ice',
+  Nourriture: 'Provisions',
+  Entretien: 'Maintenance',
+  Autres: 'Other',
+  Fuel: 'Fuel',
+  Ice: 'Ice',
+  Provisions: 'Provisions',
+  Maintenance: 'Maintenance',
+  Other: 'Other',
+};
+const EXPENSE_TO_BE: Record<ExpenseCategory, string> = {
+  Fuel: 'Carburant',
+  Ice: 'Glace',
+  Provisions: 'Nourriture',
+  Maintenance: 'Entretien',
+  Other: 'Autres',
+};
+
+const PAYMENT_STATUS_TO_EN: Record<string, PaymentRecord['status']> = {
+  Payé: 'Paid',
+  'En attente': 'Pending',
+  Paid: 'Paid',
+  Pending: 'Pending',
+};
+
+const NOTIF_CAT_TO_EN: Record<string, NotificationCategory> = {
+  paiement: 'payment',
+  sortie: 'trip',
+  contrat: 'contract',
+  document: 'document',
+  finance: 'finance',
+  ia: 'ai',
+  payment: 'payment',
+  trip: 'trip',
+  contract: 'contract',
+  ai: 'ai',
+};
+
+const MONTH_TO_EN: Record<string, string> = {
+  Déc: 'Dec',
+  Jan: 'Jan',
+  Fév: 'Feb',
+  Mar: 'Mar',
+  Avr: 'Apr',
+  Mai: 'May',
+  Juin: 'Jun',
+  Juil: 'Jul',
+  Août: 'Aug',
+  Sept: 'Sep',
+  Oct: 'Oct',
+  Nov: 'Nov',
 };
 
 export interface AuthResponseDTO {
@@ -131,7 +328,7 @@ export interface PaymentSlipDTO {
   sailorWeight: number;
   totalCrewWeights: number;
   amountDue: number;
-  status: 'Payé' | 'En attente';
+  status: string;
   paidAt?: string;
   generatedAt?: string;
   issuerName?: string;
@@ -148,7 +345,7 @@ export function extractApiErrorMessage(err: unknown): string {
   if (axios.isAxiosError(err)) {
     const axiosErr = err as AxiosError<BackendErrorPayload>;
     if (!axiosErr.response) {
-      return 'Serveur Spring Boot injoignable (vérifiez que le backend tourne sur port 8080).';
+      return 'Unable to reach the server. Please verify your connection.';
     }
     const data = axiosErr.response.data;
     if (data?.validationErrors) {
@@ -157,10 +354,10 @@ export function extractApiErrorMessage(err: unknown): string {
     }
     if (data?.message) return data.message;
     if (data?.error) return data.error;
-    return `Erreur serveur (${axiosErr.response.status})`;
+    return `Server error (${axiosErr.response.status})`;
   }
   if (err instanceof Error) return err.message;
-  return 'Une erreur inattendue est survenue.';
+  return 'An unexpected error occurred.';
 }
 
 export function isNetworkUnreachableError(err: unknown): boolean {
@@ -252,10 +449,6 @@ export const tokenStorage = {
   },
 };
 
-// ============================================================================
-// DTO -> Frontend Mappers (normalize Long IDs to string for strict UI lookups)
-// ============================================================================
-
 function normalizeRole(role: string): UserRole {
   const upper = (role || 'ARMATEUR').toUpperCase();
   if (upper === 'ADMIN' || upper === 'ARMATEUR') return 'ARMATEUR';
@@ -263,6 +456,10 @@ function normalizeRole(role: string): UserRole {
   if (upper === 'FINANCIER') return 'FINANCIER';
   if (upper === 'OBSERVATEUR') return 'OBSERVATEUR';
   return 'ARMATEUR';
+}
+
+export function normalizeMonthLabel(label: string): string {
+  return MONTH_TO_EN[label] || label;
 }
 
 export function mapBackendUser(u: AuthResponseDTO['user']): UserAccount {
@@ -284,10 +481,10 @@ export function mapBackendSailor(raw: any): Sailor {
     lastName: raw.lastName,
     phone: raw.phone,
     email: raw.email,
-    grade: (raw.grade || 'Matelot') as SailorGrade,
+    grade: GRADE_TO_EN[raw.grade] || 'Deckhand',
     shareWeight: Number(raw.shareWeight ?? 1),
-    status: (raw.status || 'Actif') as SailorStatus,
-    contractType: (raw.contractType || 'À la part') as ContractType,
+    status: SAILOR_STATUS_TO_EN[raw.status] || 'Active',
+    contractType: CONTRACT_TO_EN[raw.contractType] || 'Share Contract',
     contractStart: raw.contractStart || new Date().toISOString().slice(0, 10),
     contractEnd: raw.contractEnd || undefined,
     vesselId: raw.vesselId != null ? String(raw.vesselId) : undefined,
@@ -297,14 +494,14 @@ export function mapBackendSailor(raw: any): Sailor {
       ? raw.documents.map((d: any): SailorDocument => ({
           id: String(d.id),
           name: d.name,
-          status: (d.status || 'Valide') as SailorDocument['status'],
+          status: DOC_STATUS_TO_EN[d.status] || 'Valid',
           expiryDate: d.expiryDate || undefined,
         }))
       : [],
     absences: Array.isArray(raw.absences)
       ? raw.absences.map((a: any): SailorAbsence => ({
           id: String(a.id),
-          type: a.type as SailorAbsence['type'],
+          type: ABSENCE_TO_EN[a.type] || 'Compensatory Rest',
           startDate: a.startDate,
           endDate: a.endDate,
           days: Number(a.days ?? 1),
@@ -324,7 +521,7 @@ export function mapBackendVessel(raw: any): Vessel {
     enginePowerHp: Number(raw.enginePowerHp ?? 0),
     lengthMeters: Number(raw.lengthMeters ?? 0),
     homePort: raw.homePort,
-    status: (raw.status || 'Disponible') as VesselStatus,
+    status: VESSEL_STATUS_TO_EN[raw.status] || 'Available',
     captainId: raw.captainId != null ? String(raw.captainId) : undefined,
     lastMaintenanceDate: raw.lastMaintenanceDate || new Date().toISOString().slice(0, 10),
     imageUrl: raw.imageUrl || '/src/assets/images/vessel_trawler_hero_1795370246302.jpg',
@@ -340,11 +537,11 @@ export function mapBackendTrip(raw: any): FishingTrip {
     departureDate: String(raw.departureDate || '').slice(0, 16),
     returnDate: String(raw.returnDate || raw.departureDate || '').slice(0, 16),
     zone: raw.zone,
-    status: (raw.status || 'Planifiée') as TripStatus,
+    status: TRIP_STATUS_TO_EN[raw.status] || 'Scheduled',
     catches: Array.isArray(raw.catches)
       ? raw.catches.map((c: any) => ({
           id: String(c.id),
-          species: c.species as FishSpecies,
+          species: SPECIES_TO_EN[c.species] || 'Line-Caught Sea Bass',
           quantityKg: Number(c.quantityKg ?? 0),
           pricePerKg: Number(c.pricePerKg ?? 0),
           totalValue: Number(c.totalValue ?? 0),
@@ -362,7 +559,7 @@ export function mapBackendSale(raw: any): SaleRecord {
     tripId: raw.tripId != null ? String(raw.tripId) : '',
     vesselId: String(raw.vesselId),
     date: raw.date,
-    species: raw.species as FishSpecies,
+    species: SPECIES_TO_EN[raw.species] || 'Line-Caught Sea Bass',
     buyer: raw.buyer,
     quantityKg: Number(raw.quantityKg ?? 0),
     pricePerKg: Number(raw.pricePerKg ?? 0),
@@ -376,7 +573,7 @@ export function mapBackendExpense(raw: any): ExpenseRecord {
     tripId: raw.tripId != null ? String(raw.tripId) : undefined,
     vesselId: String(raw.vesselId),
     date: raw.date,
-    category: raw.category as ExpenseCategory,
+    category: EXPENSE_TO_EN[raw.category] || 'Other',
     description: raw.description,
     amount: Number(raw.amount ?? 0),
   };
@@ -387,7 +584,7 @@ export function mapBackendPayment(raw: any): PaymentRecord {
     id: String(raw.id),
     sailorId: String(raw.sailorId),
     tripId: String(raw.tripId),
-    periodLabel: raw.periodLabel,
+    periodLabel: String(raw.periodLabel || '').replace(/^Marée\s+/i, 'Trip '),
     grossTripRevenue: Number(raw.grossTripRevenue ?? 0),
     commonExpenses: Number(raw.commonExpenses ?? 0),
     netDistributable: Number(raw.netDistributable ?? 0),
@@ -395,7 +592,7 @@ export function mapBackendPayment(raw: any): PaymentRecord {
     sailorWeight: Number(raw.sailorWeight ?? 1),
     totalCrewWeights: Number(raw.totalCrewWeights ?? 1),
     amountDue: Number(raw.amountDue ?? 0),
-    status: (raw.status || 'En attente') as PaymentRecord['status'],
+    status: PAYMENT_STATUS_TO_EN[raw.status] || 'Pending',
     paidAt: raw.paidAt || undefined,
   };
 }
@@ -409,24 +606,25 @@ export function mapBackendShareRule(raw: any): ShareRuleConfig {
 }
 
 export function mapBackendNotification(raw: any): AppNotification {
+  const catRaw = String(raw.category || 'ai').toLowerCase();
   return {
     id: String(raw.id),
     title: raw.title,
     message: raw.message,
-    category: (String(raw.category || 'ia').toLowerCase()) as NotificationCategory,
+    category: NOTIF_CAT_TO_EN[catRaw] || 'ai',
     severity: (String(raw.severity || 'info').toLowerCase() === 'urgent'
       ? 'urgent'
       : String(raw.severity || 'info').toLowerCase() === 'warning'
       ? 'warning'
       : 'info') as AppNotification['severity'],
-    createdAt: raw.createdAt || 'À l’instant',
+    createdAt: raw.createdAt || 'Just now',
     read: Boolean(raw.read),
     targetPage: raw.targetPage || undefined,
   };
 }
 
 // ============================================================================
-// Axios REST API Modules matching Spring Boot Controllers
+// Service Modules
 // ============================================================================
 
 export const authApi = {
@@ -475,10 +673,10 @@ export const marinsApi = {
       lastName: sailor.lastName,
       phone: sailor.phone,
       email: sailor.email,
-      grade: sailor.grade,
+      grade: GRADE_TO_BE[sailor.grade] || sailor.grade,
       shareWeight: sailor.shareWeight,
-      status: sailor.status,
-      contractType: sailor.contractType,
+      status: SAILOR_STATUS_TO_BE[sailor.status] || sailor.status,
+      contractType: CONTRACT_TO_BE[sailor.contractType] || sailor.contractType,
       contractStart: sailor.contractStart,
       contractEnd: sailor.contractEnd || null,
       vesselId: sailor.vesselId && /^\d+$/.test(sailor.vesselId) ? Number(sailor.vesselId) : null,
@@ -495,10 +693,10 @@ export const marinsApi = {
       lastName: sailor.lastName,
       phone: sailor.phone,
       email: sailor.email,
-      grade: sailor.grade,
+      grade: GRADE_TO_BE[sailor.grade] || sailor.grade,
       shareWeight: sailor.shareWeight,
-      status: sailor.status,
-      contractType: sailor.contractType,
+      status: SAILOR_STATUS_TO_BE[sailor.status] || sailor.status,
+      contractType: CONTRACT_TO_BE[sailor.contractType] || sailor.contractType,
       contractStart: sailor.contractStart,
       contractEnd: sailor.contractEnd || null,
       vesselId: sailor.vesselId && /^\d+$/.test(sailor.vesselId) ? Number(sailor.vesselId) : null,
@@ -514,7 +712,7 @@ export const marinsApi = {
   createAbsence: async (sailorId: string, absence: Omit<SailorAbsence, 'id'>) => {
     const { data } = await axiosInstance.post('/absences', {
       marinId: Number(sailorId),
-      type: absence.type,
+      type: ABSENCE_TO_BE[absence.type] || absence.type,
       startDate: absence.startDate,
       endDate: absence.endDate,
       days: absence.days,
@@ -522,7 +720,7 @@ export const marinsApi = {
     });
     return {
       id: String(data.id),
-      type: data.type as SailorAbsence['type'],
+      type: ABSENCE_TO_EN[data.type] || 'Compensatory Rest',
       startDate: data.startDate,
       endDate: data.endDate,
       days: Number(data.days),
@@ -530,11 +728,13 @@ export const marinsApi = {
     };
   },
   updateDocumentStatus: async (docId: string, status: SailorDocument['status']) => {
-    const { data } = await axiosInstance.patch(`/documents/${docId}/status`, { status });
+    const { data } = await axiosInstance.patch(`/documents/${docId}/status`, {
+      status: DOC_STATUS_TO_BE[status] || status,
+    });
     return {
       id: String(data.id),
       name: data.name as string,
-      status: data.status as SailorDocument['status'],
+      status: DOC_STATUS_TO_EN[data.status] || 'Valid',
       expiryDate: data.expiryDate || undefined,
     };
   },
@@ -565,7 +765,7 @@ export const flotteApi = {
       enginePowerHp: vessel.enginePowerHp,
       lengthMeters: vessel.lengthMeters,
       homePort: vessel.homePort,
-      status: vessel.status,
+      status: VESSEL_STATUS_TO_BE[vessel.status] || vessel.status,
       captainId: vessel.captainId && /^\d+$/.test(vessel.captainId) ? Number(vessel.captainId) : null,
       lastMaintenanceDate: vessel.lastMaintenanceDate,
       imageUrl: vessel.imageUrl || null,
@@ -582,7 +782,7 @@ export const flotteApi = {
       enginePowerHp: vessel.enginePowerHp,
       lengthMeters: vessel.lengthMeters,
       homePort: vessel.homePort,
-      status: vessel.status,
+      status: VESSEL_STATUS_TO_BE[vessel.status] || vessel.status,
       captainId: vessel.captainId && /^\d+$/.test(vessel.captainId) ? Number(vessel.captainId) : null,
       lastMaintenanceDate: vessel.lastMaintenanceDate,
       imageUrl: vessel.imageUrl || null,
@@ -606,9 +806,9 @@ export const flotteApi = {
       departureDate: normalizeDateTime(trip.departureDate),
       returnDate: trip.returnDate ? normalizeDateTime(trip.returnDate) : null,
       zone: trip.zone,
-      status: trip.status,
+      status: TRIP_STATUS_TO_BE[trip.status] || trip.status,
       catches: trip.catches.map((c) => ({
-        species: c.species,
+        species: SPECIES_TO_BE[c.species] || c.species,
         quantityKg: c.quantityKg,
         pricePerKg: c.pricePerKg,
       })),
@@ -618,7 +818,9 @@ export const flotteApi = {
     return mapBackendTrip(data);
   },
   updateTripStatus: async (tripId: string, status: TripStatus) => {
-    const { data } = await axiosInstance.patch(`/sorties/${tripId}/status`, { status });
+    const { data } = await axiosInstance.patch(`/sorties/${tripId}/status`, {
+      status: TRIP_STATUS_TO_BE[status] || status,
+    });
     return mapBackendTrip(data);
   },
 };
@@ -633,7 +835,7 @@ export const financesApi = {
       tripId: sale.tripId && /^\d+$/.test(sale.tripId) ? Number(sale.tripId) : null,
       vesselId: Number(sale.vesselId),
       date: sale.date,
-      species: sale.species,
+      species: SPECIES_TO_BE[sale.species] || sale.species,
       buyer: sale.buyer,
       quantityKg: sale.quantityKg,
       pricePerKg: sale.pricePerKg,
@@ -650,7 +852,7 @@ export const financesApi = {
       tripId: expense.tripId && /^\d+$/.test(expense.tripId) ? Number(expense.tripId) : null,
       vesselId: Number(expense.vesselId),
       date: expense.date,
-      category: expense.category,
+      category: EXPENSE_TO_BE[expense.category] || expense.category,
       description: expense.description,
       amount: expense.amount,
     };
@@ -663,7 +865,7 @@ export const financesApi = {
   },
   updateShareRule: async (rule: ShareRuleConfig) => {
     const { data } = await axiosInstance.put('/paiements/regle-repartition', {
-      ruleName: 'Règle Armement Active',
+      ruleName: 'Active Fleet Share Rule',
       boatSharePercent: rule.boatSharePercent,
       crewSharePercent: rule.crewSharePercent,
       deductCommonExpensesBeforeSplit: rule.deductCommonExpensesBeforeSplit,

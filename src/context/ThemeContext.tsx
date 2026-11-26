@@ -54,7 +54,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 export function useTheme(): ThemeContextValue {
   const ctx = useContext(ThemeContext);
   if (!ctx) {
-    throw new Error('useTheme doit être utilisé dans un ThemeProvider');
+    throw new Error('useTheme must be used within a ThemeProvider');
   }
   return ctx;
 }

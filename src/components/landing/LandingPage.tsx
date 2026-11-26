@@ -27,10 +27,10 @@ import { ThemeTogglePill } from '../common/ThemeTogglePill';
 gsap.registerPlugin(ScrollTrigger);
 
 const HERO_CIRCULAR_STATS = [
-  { label: 'Équipages suivis', target: 142, suffix: '', sub: 'Marins & officiers', pct: 88, delay: '0s' },
-  { label: 'Flotte connectée', target: 18, suffix: '', sub: 'Chalutiers & fileyeurs', pct: 92, delay: '0.6s' },
-  { label: 'Captures analysées', target: 486, suffix: ' T', sub: 'Volume annuel criée', pct: 79, delay: '1.2s' },
-  { label: 'Parts transparentes', target: 100, suffix: '%', sub: 'Calcul automatisé', pct: 100, delay: '1.8s' },
+  { label: 'Active Crew Tracked', target: 142, suffix: '', sub: 'Sailors & officers', pct: 88, delay: '0s' },
+  { label: 'Connected Fleet', target: 18, suffix: '', sub: 'Trawlers & gillnetters', pct: 92, delay: '0.6s' },
+  { label: 'Catches Analyzed', target: 486, suffix: ' T', sub: 'Annual auction volume', pct: 79, delay: '1.2s' },
+  { label: 'Transparent Shares', target: 100, suffix: '%', sub: 'Automated calculation', pct: 100, delay: '1.8s' },
 ];
 
 export const LandingPage: React.FC = () => {
@@ -111,13 +111,13 @@ export const LandingPage: React.FC = () => {
               href="#fonctionnalites"
               className="hover:text-[#16C5C0] dark:hover:text-[#7DDCEB] transition-colors whitespace-nowrap shrink-0"
             >
-              Fonctionnalités
+              Features
             </a>
             <a
               href="#flotte-operations"
               className="hover:text-[#16C5C0] dark:hover:text-[#7DDCEB] transition-colors whitespace-nowrap shrink-0"
             >
-              Flotte &amp; Marées
+              Fleet &amp; Trips
             </a>
             <a
               href="#ocean-ai"
@@ -129,7 +129,7 @@ export const LandingPage: React.FC = () => {
               href="#architecture"
               className="hover:text-[#16C5C0] dark:hover:text-[#7DDCEB] transition-colors whitespace-nowrap shrink-0"
             >
-              Architecture
+              Roles &amp; Access
             </a>
           </nav>
 
@@ -141,13 +141,13 @@ export const LandingPage: React.FC = () => {
               onClick={() => setRoute('auth')}
               className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#16C5C0] hover:bg-[#19d6d1] text-[#062B45] font-semibold text-sm transition-colors shadow-lg shadow-[#16C5C0]/30 whitespace-nowrap shrink-0 cursor-pointer"
             >
-              Connexion
+              Sign In
             </MagneticButton>
 
             <button
               type="button"
               onClick={() => setMobileMenuOpen((v) => !v)}
-              aria-label="Menu navigation"
+              aria-label="Navigation menu"
               className="md:hidden p-2.5 rounded-xl bg-white/85 dark:bg-[#072B44]/85 border border-[#0A4565]/15 dark:border-[#7DDCEB]/30 text-[#062B45] dark:text-[#F8FAFC] cursor-pointer"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -163,14 +163,14 @@ export const LandingPage: React.FC = () => {
               onClick={() => setMobileMenuOpen(false)}
               className="py-2 px-3 rounded-lg text-sm font-medium hover:bg-[#16C5C0]/10"
             >
-              Fonctionnalités
+              Features
             </a>
             <a
               href="#flotte-operations"
               onClick={() => setMobileMenuOpen(false)}
               className="py-2 px-3 rounded-lg text-sm font-medium hover:bg-[#16C5C0]/10"
             >
-              Flotte &amp; Marées
+              Fleet &amp; Trips
             </a>
             <a
               href="#ocean-ai"
@@ -187,7 +187,7 @@ export const LandingPage: React.FC = () => {
               }}
               className="w-full py-2.5 px-4 rounded-xl bg-[#16C5C0] text-[#062B45] font-semibold text-sm text-center cursor-pointer"
             >
-              Connexion à l’espace Bahripay
+              Sign in to Bahripay
             </button>
           </div>
         )}
@@ -201,7 +201,7 @@ export const LandingPage: React.FC = () => {
             className="mb-5 text-xs sm:text-sm font-semibold tracking-wide text-[#0A4565] dark:text-[#7DDCEB] flex items-center gap-2"
           >
             <Compass className="w-4 h-4 text-[#0A4565] dark:text-[#16C5C0]" />
-            <span>Bahripay · Écosystème maritime, équipages, criée &amp; intelligence prédictive</span>
+            <span>Bahripay · Maritime ecosystem, crew operations, fish auctions &amp; predictive insights</span>
           </motion.div>
 
           <motion.h1
@@ -210,7 +210,7 @@ export const LandingPage: React.FC = () => {
             transition={{ duration: 0.85, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             className="font-display font-bold tracking-tight text-balance text-[clamp(2.15rem,4.7vw,4rem)] leading-[1.07] text-[#042338] dark:text-[#F8FAFC] max-w-4xl drop-shadow-[0_4px_24px_rgba(255,255,255,0.65)] dark:drop-shadow-[0_8px_30px_rgba(3,21,36,0.75)]"
           >
-            Bienvenue dans l’univers de la gestion maritime intelligente
+            Welcome to the world of intelligent maritime management
           </motion.h1>
 
           <motion.p
@@ -219,7 +219,7 @@ export const LandingPage: React.FC = () => {
             transition={{ duration: 0.85, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
             className="mt-6 text-base sm:text-lg md:text-xl text-[#0A4565]/90 dark:text-[#F8FAFC]/88 max-w-2xl leading-relaxed drop-shadow-[0_2px_12px_rgba(255,255,255,0.5)] dark:drop-shadow-[0_4px_16px_rgba(3,21,36,0.65)]"
           >
-            Une nouvelle génération de solutions pour gérer, analyser et optimiser vos activités de pêche.
+            A next-generation solution to manage, analyze, and optimize your maritime fishing operations.
           </motion.p>
 
           <motion.div
@@ -233,7 +233,7 @@ export const LandingPage: React.FC = () => {
               onClick={handleExplorePlatform}
               className="group inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-[#062B45] dark:bg-[#16C5C0] hover:bg-[#0A4565] dark:hover:bg-[#1ad6d1] text-[#F8FAFC] dark:text-[#062B45] font-semibold text-sm sm:text-base shadow-xl shadow-[#062B45]/20 dark:shadow-[#16C5C0]/35 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
-              <span>Explorer la plateforme</span>
+              <span>Explore Platform</span>
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </MagneticButton>
 
@@ -241,7 +241,7 @@ export const LandingPage: React.FC = () => {
               href="#fonctionnalites"
               className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-white/85 dark:bg-[#072B44]/80 hover:bg-white dark:hover:bg-[#0A4565]/90 text-[#062B45] dark:text-[#F8FAFC] border border-[#0A4565]/18 dark:border-[#7DDCEB]/35 font-semibold text-sm sm:text-base shadow-lg shadow-[#062B45]/8 transition-all duration-200 whitespace-nowrap shrink-0"
             >
-              Découvrir nos fonctionnalités
+              Discover Features
             </a>
           </motion.div>
 
@@ -314,7 +314,7 @@ export const LandingPage: React.FC = () => {
             href="#fonctionnalites"
             className="flex flex-col items-center gap-1.5 text-xs font-semibold text-[#062B45]/80 dark:text-[#7DDCEB]/90 hover:text-[#16C5C0] dark:hover:text-[#F8FAFC] transition-colors"
           >
-            <span>Découvrir la suite</span>
+            <span>Scroll to explore</span>
             <motion.span
               animate={{ y: [0, 6, 0] }}
               transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
@@ -351,13 +351,13 @@ export const LandingPage: React.FC = () => {
           className="max-w-2xl mb-12"
         >
           <p className="text-sm font-semibold text-[#16C5C0] mb-2">
-            Plateforme de pilotage Bahripay
+            Bahripay Command Platform
           </p>
           <h2 className="font-display font-bold text-3xl sm:text-4xl tracking-tight text-balance text-[#062B45] dark:text-[#F8FAFC]">
-            Conçue pour les réalités du port, du pont et de la criée
+            Built for the realities of the harbor, deck, and fish auction
           </h2>
           <p className="mt-3 text-base text-[#0A4565]/80 dark:text-[#7DDCEB]/80 leading-relaxed">
-            Centralisez la gestion administrative de vos équipages, suivez chaque marée par espèce et automatisez la répartition financière à la part.
+            Centralize crew administration, track every fishing trip by species, and automate transparent crew share settlements.
           </p>
         </motion.div>
 
@@ -368,27 +368,27 @@ export const LandingPage: React.FC = () => {
               <div>
                 <div className="flex items-center gap-2.5 text-sm font-semibold text-[#16C5C0] mb-3">
                   <Ship className="w-4 h-4" />
-                  <span>01. Flotte &amp; Sorties en mer</span>
+                  <span>01. Fleet &amp; Sea Trips</span>
                 </div>
                 <h3 className="font-display font-bold text-2xl text-[#062B45] dark:text-[#F8FAFC]">
-                  Traçabilité complète des marées et captures
+                  End-to-end traceability of trips and catches
                 </h3>
                 <p className="mt-3 text-sm sm:text-base text-[#0A4565]/80 dark:text-[#F8FAFC]/75 leading-relaxed">
-                  Enregistrez les départs, affectez les équipages par grade, saisissez les prises espèce par espèce et obtenez instantanément l’estimation de la recette brute.
+                  Log departures, assign crew members by grade, record catches species by species, and instantly estimate gross auction revenue.
                 </p>
               </div>
               <div className="mt-6 pt-5 border-t border-[#0A4565]/10 dark:border-[#7DDCEB]/15 flex flex-wrap items-center gap-4 text-xs text-[#0A4565]/75 dark:text-[#7DDCEB]/80">
-                <span>Suivi par port d’attache</span>
+                <span>Home-port tracking</span>
                 <span aria-hidden="true">·</span>
-                <span>Capacité cale &amp; maintenance</span>
+                <span>Hold capacity &amp; maintenance</span>
                 <span aria-hidden="true">·</span>
-                <span>Calcul automatique des ventes</span>
+                <span>Automated sales calculation</span>
               </div>
             </div>
             <div className="md:w-72 lg:w-80 h-56 md:h-auto shrink-0 overflow-hidden">
               <SafeImage
                 src="/src/assets/images/vessel_trawler_hero_1795370246302.jpg"
-                alt="Chalutier en mer au lever du jour"
+                alt="Fishing trawler at sea at sunrise"
                 className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
               />
             </div>
@@ -401,13 +401,13 @@ export const LandingPage: React.FC = () => {
                 <Users className="w-5 h-5" />
               </div>
               <div className="text-sm font-semibold text-[#16C5C0] mb-1.5">
-                02. Administration des marins
+                02. Crew Administration
               </div>
               <h3 className="font-display font-bold text-xl text-[#062B45] dark:text-[#F8FAFC]">
-                Dossiers ENIM, grades et brevets
+                Registries, grades &amp; maritime certificates
               </h3>
               <p className="mt-3 text-sm text-[#0A4565]/80 dark:text-[#F8FAFC]/75 leading-relaxed">
-                Suivez les contrats à la part ou CDI, gérez les congés compensateurs et recevez des alertes avant l’expiration des visites médicales ou brevets STCW.
+                Track share or permanent contracts, manage compensatory rest, and receive alerts before medical fitness or STCW certificates expire.
               </p>
             </div>
             <button
@@ -415,7 +415,7 @@ export const LandingPage: React.FC = () => {
               onClick={() => loginAsRole('ARMATEUR')}
               className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#0A4565] dark:text-[#7DDCEB] hover:text-[#16C5C0] transition-colors cursor-pointer"
             >
-              <span>Ouvrir le registre équipages</span>
+              <span>Open crew registry</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </FloatingGlassCard>
@@ -427,18 +427,18 @@ export const LandingPage: React.FC = () => {
                 <Wallet className="w-5 h-5" />
               </div>
               <div className="text-sm font-semibold text-[#16C5C0] mb-1.5">
-                03. Finance &amp; Partages
+                03. Finance &amp; Share Splits
               </div>
               <h3 className="font-display font-bold text-xl text-[#062B45] dark:text-[#F8FAFC]">
-                Calcul automatisé des parts d’équipage
+                Automated crew share calculations
               </h3>
               <p className="mt-3 text-sm text-[#0A4565]/80 dark:text-[#F8FAFC]/75 leading-relaxed">
-                Déduisez les frais communs (carburant, glace, vivres), appliquez la clé Armateur / Équipage et éditez les fiches de paiement en un clic.
+                Deduct common trip expenses (fuel, ice, provisions), apply Shipowner / Crew split rules, and generate payment slips in one click.
               </p>
             </div>
             <div className="mt-6 pt-4 border-t border-[#0A4565]/10 dark:border-[#7DDCEB]/15 flex items-center justify-between text-xs font-mono tabular-nums text-[#0A4565]/70 dark:text-[#7DDCEB]/80">
-              <span>Armateur 45%</span>
-              <span>Équipage 55%</span>
+              <span>Shipowner 45%</span>
+              <span>Crew 55%</span>
             </div>
           </FloatingGlassCard>
 
@@ -451,13 +451,13 @@ export const LandingPage: React.FC = () => {
               <div>
                 <div className="flex items-center gap-2 text-sm font-semibold text-[#7DDCEB] mb-3">
                   <BrainCircuit className="w-4 h-4 text-[#16C5C0]" />
-                  <span>04. Module Ocean AI</span>
+                  <span>04. Ocean AI Module</span>
                 </div>
                 <h3 className="font-display font-bold text-2xl text-[#F8FAFC]">
-                  Assistant décisionnel &amp; prévisions de rentabilité
+                  Decision intelligence &amp; profitability forecasting
                 </h3>
                 <p className="mt-3 text-sm sm:text-base text-[#F8FAFC]/80 leading-relaxed">
-                  Interrogez vos données historiques en langage naturel : identifiez le navire le plus rentable, anticipez les pics de captures saisonniers et maîtrisez votre poste carburant.
+                  Query your operational history in natural language: identify your most profitable vessel, anticipate seasonal catch peaks, and control fuel expenses.
                 </p>
               </div>
               <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -466,17 +466,17 @@ export const LandingPage: React.FC = () => {
                   onClick={handleExplorePlatform}
                   className="px-5 py-2.5 rounded-xl bg-[#16C5C0] hover:bg-[#19d6d1] text-[#062B45] font-semibold text-sm transition-colors cursor-pointer"
                 >
-                  Tester Ocean AI en direct
+                  Try Ocean AI Live
                 </MagneticButton>
                 <span className="text-xs text-[#7DDCEB]/80">
-                  Mode démonstration transparent · Prêt pour API LLM
+                  Live fleet intelligence · Real-time operational insights
                 </span>
               </div>
             </div>
             <div className="md:w-72 lg:w-80 h-56 md:h-auto shrink-0 overflow-hidden relative">
               <SafeImage
                 src="/src/assets/images/maritime_port_ops_1795370246156.jpg"
-                alt="Port de pêche moderne au lever du soleil"
+                alt="Modern fishing harbor at sunrise"
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-[#062B45]/60 via-transparent to-transparent" />
@@ -486,7 +486,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* ============================================================
-          SECTION 3: ENTERPRISE ARCHITECTURE & ROLES
+          SECTION 3: ROLES & OPERATIONAL ACCESS
       ============================================================ */}
       <section
         id="flotte-operations"
@@ -495,31 +495,31 @@ export const LandingPage: React.FC = () => {
         <div id="architecture" className="max-w-7xl mx-auto px-5 sm:px-8 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <div className="landing-arch-item lg:col-span-6">
             <p className="text-sm font-semibold text-[#16C5C0] mb-2">
-              Architecture &amp; Sécurité
+              Roles &amp; Security
             </p>
             <h2 className="font-display font-bold text-3xl tracking-tight text-[#062B45] dark:text-[#F8FAFC]">
-              Une interface réactive prête pour votre backend Spring Boot
+              A responsive workspace tailored to every maritime role
             </h2>
             <p className="mt-4 text-sm sm:text-base text-[#0A4565]/80 dark:text-[#F8FAFC]/75 leading-relaxed">
-              Bahripay sépare rigoureusement les contrats DTO, le client REST authentifié par JWT et la gestion des rôles. Accédez dès maintenant aux vues par profil métier.
+              Bahripay organizes crew administration, fleet tracking, and financial settlements with dedicated views and permissions for each operational profile.
             </p>
             <div className="mt-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FloatingGlassCard className="p-4">
                 <div className="flex items-center gap-2 text-sm font-semibold text-[#062B45] dark:text-[#F8FAFC]">
                   <ShieldCheck className="w-4 h-4 text-[#16C5C0]" />
-                  <span>Spring Security &amp; JWT</span>
+                  <span>Role-Based Access Control</span>
                 </div>
                 <p className="mt-1.5 text-xs text-[#0A4565]/75 dark:text-[#7DDCEB]/75">
-                  Contrôle d’accès par rôle : Armateur, Capitaine, Financier, Observateur.
+                  Tailored permissions by profile: Shipowner, Captain, Finance Manager, and Observer.
                 </p>
               </FloatingGlassCard>
               <FloatingGlassCard className="p-4">
                 <div className="flex items-center gap-2 text-sm font-semibold text-[#062B45] dark:text-[#F8FAFC]">
                   <BarChart3 className="w-4 h-4 text-[#16C5C0]" />
-                  <span>Rapports PDF &amp; Excel</span>
+                  <span>PDF &amp; Excel Reports</span>
                 </div>
                 <p className="mt-1.5 text-xs text-[#0A4565]/75 dark:text-[#7DDCEB]/75">
-                  Exports comptables immédiats et fiches de paie maritimes imprimables.
+                  Instant accounting exports and printable maritime crew payment slips.
                 </p>
               </FloatingGlassCard>
             </div>
@@ -527,17 +527,17 @@ export const LandingPage: React.FC = () => {
 
           <FloatingGlassCard className="landing-arch-item lg:col-span-6 p-6 sm:p-8 !bg-[#062B45] text-[#F8FAFC] !border-[#16C5C0]/30">
             <h3 className="font-display font-semibold text-lg text-[#7DDCEB] mb-2">
-              Accès direct par rôle métier
+              Direct access by role
             </h3>
             <p className="text-sm text-[#F8FAFC]/75 mb-6">
-              Choisissez un profil pour explorer immédiatement le centre de contrôle Bahripay :
+              Select a profile to launch the Bahripay command center right away:
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
-                { role: 'ARMATEUR' as const, label: 'Armateur / Direction', desc: 'Accès intégral flotte & finances' },
-                { role: 'CAPITAINE' as const, label: 'Capitaine de navire', desc: 'Sorties, équipages & captures' },
-                { role: 'FINANCIER' as const, label: 'Gestionnaire financier', desc: 'Criée, dépenses & fiches de paie' },
-                { role: 'OBSERVATEUR' as const, label: 'Audit & Rapports', desc: 'Consultation & exports PDF/CSV' },
+                { role: 'ARMATEUR' as const, label: 'Shipowner / Management', desc: 'Full fleet, crew & finance control' },
+                { role: 'CAPITAINE' as const, label: 'Vessel Captain', desc: 'Trips, crew & catch declarations' },
+                { role: 'FINANCIER' as const, label: 'Finance Manager', desc: 'Auctions, expenses & payroll' },
+                { role: 'OBSERVATEUR' as const, label: 'Audit & Reporting', desc: 'Read-only & PDF/CSV exports' },
               ].map((item) => (
                 <button
                   key={item.role}
@@ -563,7 +563,7 @@ export const LandingPage: React.FC = () => {
           <Anchor className="w-4 h-4 text-[#16C5C0]" />
           <span className="font-semibold text-[#062B45] dark:text-[#F8FAFC]">Bahripay</span>
           <span aria-hidden="true">·</span>
-          <span>Gestion maritime &amp; activités de pêche</span>
+          <span>Maritime &amp; fishing fleet management</span>
         </div>
         <div className="flex items-center gap-6 text-xs">
           <button
@@ -571,14 +571,14 @@ export const LandingPage: React.FC = () => {
             onClick={() => setRoute('auth')}
             className="hover:text-[#16C5C0] transition-colors cursor-pointer"
           >
-            Authentification
+            Sign In
           </button>
           <button
             type="button"
             onClick={handleExplorePlatform}
             className="hover:text-[#16C5C0] transition-colors cursor-pointer"
           >
-            Tableau de bord
+            Dashboard
           </button>
           <span>© 2026 Bahripay Maritime</span>
         </div>

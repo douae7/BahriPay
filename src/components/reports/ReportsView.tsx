@@ -45,11 +45,11 @@ export const ReportsView: React.FC = () => {
   const handleExportExcelCSV = () => {
     let headers: string[] = [];
     let rows: string[][] = [];
-    let filename = 'bahripay_rapport.csv';
+    let filename = 'bahripay_report.csv';
 
     if (reportType === 'financial') {
-      filename = 'bahripay_rapport_financier.csv';
-      headers = ['Mois', 'Recettes (€)', 'Dépenses (€)', 'Bénéfice Net (€)', 'Captures (kg)'];
+      filename = 'bahripay_financial_report.csv';
+      headers = ['Month', 'Revenue (€)', 'Expenses (€)', 'Net Profit (€)', 'Catch (kg)'];
       rows = monthlySeries.map((m) => [
         m.month,
         String(m.recettes),
@@ -58,8 +58,8 @@ export const ReportsView: React.FC = () => {
         String(m.captureKg),
       ]);
     } else if (reportType === 'trips') {
-      filename = 'bahripay_rapport_sorties.csv';
-      headers = ['Code', 'Navire', 'Zone', 'Départ', 'Statut', 'Captures (kg)', 'Recette (€)'];
+      filename = 'bahripay_trips_report.csv';
+      headers = ['Code', 'Vessel', 'Zone', 'Departure', 'Status', 'Catch (kg)', 'Revenue (€)'];
       rows = filteredTrips.map((t) => [
         t.code,
         vessels.find((v) => v.id === t.vesselId)?.name || '',
@@ -70,8 +70,8 @@ export const ReportsView: React.FC = () => {
         String(t.estimatedRevenue),
       ]);
     } else if (reportType === 'sailors') {
-      filename = 'bahripay_rapport_marins.csv';
-      headers = ['Matricule', 'Nom', 'Grade', 'Contrat', 'Port', 'Statut', 'Total Paiements (€)'];
+      filename = 'bahripay_crew_report.csv';
+      headers = ['ID', 'Name', 'Grade', 'Contract', 'Port', 'Status', 'Total Shares (€)'];
       rows = sailors.map((s) => {
         const totalPaid = payments
           .filter((p) => p.sailorId === s.id)
@@ -87,8 +87,8 @@ export const ReportsView: React.FC = () => {
         ];
       });
     } else {
-      filename = 'bahripay_statistiques_production.csv';
-      headers = ['Espèce', 'Volume (kg)', 'Chiffre d’affaires (€)'];
+      filename = 'bahripay_production_stats.csv';
+      headers = ['Species', 'Volume (kg)', 'Total Sales (€)'];
       rows = productionBySpecies.map((p) => [p.species, String(p.kg), String(p.value)]);
     }
 
@@ -118,10 +118,10 @@ export const ReportsView: React.FC = () => {
       <div className="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-display font-bold text-2xl sm:text-3xl tracking-tight text-[#062B45] dark:text-[#F8FAFC]">
-            Rapports &amp; Statistiques
+            Reports &amp; Statistics
           </h1>
           <p className="text-sm text-[#0A4565]/75 dark:text-[#7DDCEB]/80 mt-1">
-            Analyses comparatives mensuelles et annuelles avec export Excel (CSV) et impression PDF Bahripay.
+            Monthly and annual comparative analytics with Excel (CSV) export and Bahripay PDF printing.
           </p>
         </div>
 
@@ -140,7 +140,7 @@ export const ReportsView: React.FC = () => {
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#16C5C0] hover:bg-[#19d8d2] text-[#062B45] font-semibold text-xs sm:text-sm cursor-pointer shadow-lg shadow-[#16C5C0]/25"
           >
             <Printer className="w-4 h-4" />
-            <span>Exporter PDF / Imprimer</span>
+            <span>Export PDF / Print</span>
           </MagneticButton>
         </div>
       </div>
@@ -152,10 +152,10 @@ export const ReportsView: React.FC = () => {
       >
         <div className="flex flex-wrap gap-1.5">
           {([
-            { id: 'financial', label: 'Financier' },
-            { id: 'trips', label: 'Sorties de pêche' },
-            { id: 'sailors', label: 'Marins' },
-            { id: 'production', label: 'Production espèces' },
+            { id: 'financial', label: 'Financial' },
+            { id: 'trips', label: 'Fishing Trips' },
+            { id: 'sailors', label: 'Crew' },
+            { id: 'production', label: 'Species Production' },
           ] as const).map((t) => {
             const active = reportType === t.id;
             return (
@@ -183,7 +183,7 @@ export const ReportsView: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          <span className="opacity-70">Période :</span>
+          <span className="opacity-70">Period:</span>
           <input
             type="date"
             value={dateFrom}
@@ -206,9 +206,9 @@ export const ReportsView: React.FC = () => {
           <div>
             <h2 className="font-display font-semibold text-lg flex items-center gap-2">
               <FileSpreadsheet className="w-5 h-5 text-[#16C5C0]" />
-              <span>Comparaison annuelle des recettes vs bénéfice net</span>
+              <span>Annual Revenue vs. Net Profit Comparison</span>
             </h2>
-            <p className="text-xs opacity-70">Données consolidées sur 12 mois glissants</p>
+            <p className="text-xs opacity-70">Consolidated rolling 12-month performance</p>
           </div>
         </div>
         <div className="h-64 w-full">
@@ -223,7 +223,7 @@ export const ReportsView: React.FC = () => {
                 tickFormatter={(v) => `${Math.round(v / 1000)}k`}
               />
               <Tooltip
-                formatter={(v) => [`${Number(v ?? 0).toLocaleString('fr-FR')} €`]}
+                formatter={(v) => [`€${Number(v ?? 0).toLocaleString('en-US')}`]}
                 contentStyle={{
                   backgroundColor: theme === 'dark' ? '#062B45' : '#FFFFFF',
                   borderColor: 'rgba(22,197,192,0.35)',
@@ -231,8 +231,8 @@ export const ReportsView: React.FC = () => {
                   fontSize: '12px',
                 }}
               />
-              <Bar dataKey="recettes" name="Recettes" fill="#0A4565" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="benefice" name="Bénéfice net" fill="#16C5C0" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="recettes" name="Revenue" fill="#0A4565" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="benefice" name="Net Profit" fill="#16C5C0" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -245,23 +245,23 @@ export const ReportsView: React.FC = () => {
             <table className="w-full text-left border-collapse min-w-[540px]">
               <thead>
                 <tr className="border-b border-[#0A4565]/10 dark:border-[#7DDCEB]/12 text-xs font-semibold opacity-75">
-                  <th className="py-3.5 px-5">Mois</th>
-                  <th className="py-3.5 px-4 text-right">Recettes</th>
-                  <th className="py-3.5 px-4 text-right">Dépenses</th>
-                  <th className="py-3.5 px-4 text-right">Bénéfice net</th>
-                  <th className="py-3.5 px-5 text-right">Captures</th>
+                  <th className="py-3.5 px-5">Month</th>
+                  <th className="py-3.5 px-4 text-right">Revenue</th>
+                  <th className="py-3.5 px-4 text-right">Expenses</th>
+                  <th className="py-3.5 px-4 text-right">Net Profit</th>
+                  <th className="py-3.5 px-5 text-right">Catches</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#0A4565]/10 dark:divide-[#7DDCEB]/10 text-sm font-mono tabular-nums">
                 {monthlySeries.map((m) => (
                   <tr key={m.month} className="hover:bg-[#16C5C0]/6 transition-colors">
                     <td className="py-3 px-5 font-sans font-semibold">{m.month}</td>
-                    <td className="py-3 px-4 text-right">{m.recettes.toLocaleString('fr-FR')} €</td>
-                    <td className="py-3 px-4 text-right">{m.depenses.toLocaleString('fr-FR')} €</td>
+                    <td className="py-3 px-4 text-right">€{m.recettes.toLocaleString('en-US')}</td>
+                    <td className="py-3 px-4 text-right">€{m.depenses.toLocaleString('en-US')}</td>
                     <td className="py-3 px-4 text-right font-bold text-[#16C5C0]">
-                      {m.benefice.toLocaleString('fr-FR')} €
+                      €{m.benefice.toLocaleString('en-US')}
                     </td>
-                    <td className="py-3 px-5 text-right">{m.captureKg.toLocaleString('fr-FR')} kg</td>
+                    <td className="py-3 px-5 text-right">{m.captureKg.toLocaleString('en-US')} kg</td>
                   </tr>
                 ))}
               </tbody>
@@ -273,11 +273,11 @@ export const ReportsView: React.FC = () => {
               <thead>
                 <tr className="border-b border-[#0A4565]/10 dark:border-[#7DDCEB]/12 text-xs font-semibold opacity-75">
                   <th className="py-3.5 px-5">Code</th>
-                  <th className="py-3.5 px-4">Navire</th>
+                  <th className="py-3.5 px-4">Vessel</th>
                   <th className="py-3.5 px-4">Zone</th>
-                  <th className="py-3.5 px-4">Statut</th>
+                  <th className="py-3.5 px-4">Status</th>
                   <th className="py-3.5 px-4 text-right">Volume</th>
-                  <th className="py-3.5 px-5 text-right">Recette</th>
+                  <th className="py-3.5 px-5 text-right">Revenue</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#0A4565]/10 dark:divide-[#7DDCEB]/10 text-sm">
@@ -290,10 +290,10 @@ export const ReportsView: React.FC = () => {
                     <td className="py-3 px-4 text-xs">{t.zone}</td>
                     <td className="py-3 px-4 text-xs">{t.status}</td>
                     <td className="py-3 px-4 text-right font-mono tabular-nums">
-                      {t.totalCatchKg.toLocaleString('fr-FR')} kg
+                      {t.totalCatchKg.toLocaleString('en-US')} kg
                     </td>
                     <td className="py-3 px-5 text-right font-mono tabular-nums font-bold">
-                      {t.estimatedRevenue.toLocaleString('fr-FR')} €
+                      €{t.estimatedRevenue.toLocaleString('en-US')}
                     </td>
                   </tr>
                 ))}
@@ -305,11 +305,11 @@ export const ReportsView: React.FC = () => {
             <table className="w-full text-left border-collapse min-w-[580px]">
               <thead>
                 <tr className="border-b border-[#0A4565]/10 dark:border-[#7DDCEB]/12 text-xs font-semibold opacity-75">
-                  <th className="py-3.5 px-5">Marin</th>
+                  <th className="py-3.5 px-5">Crew Member</th>
                   <th className="py-3.5 px-4">Grade</th>
-                  <th className="py-3.5 px-4">Contrat</th>
-                  <th className="py-3.5 px-4">Port</th>
-                  <th className="py-3.5 px-5 text-right">Cumul parts</th>
+                  <th className="py-3.5 px-4">Contract</th>
+                  <th className="py-3.5 px-4">Home Port</th>
+                  <th className="py-3.5 px-5 text-right">Cumulative Shares</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#0A4565]/10 dark:divide-[#7DDCEB]/10 text-sm">
@@ -326,7 +326,7 @@ export const ReportsView: React.FC = () => {
                       <td className="py-3 px-4 text-xs">{s.contractType}</td>
                       <td className="py-3 px-4 text-xs">{s.portAttache}</td>
                       <td className="py-3 px-5 text-right font-mono tabular-nums font-bold">
-                        {Math.round(total).toLocaleString('fr-FR')} €
+                        €{Math.round(total).toLocaleString('en-US')}
                       </td>
                     </tr>
                   );
@@ -339,9 +339,9 @@ export const ReportsView: React.FC = () => {
             <table className="w-full text-left border-collapse min-w-[460px]">
               <thead>
                 <tr className="border-b border-[#0A4565]/10 dark:border-[#7DDCEB]/12 text-xs font-semibold opacity-75">
-                  <th className="py-3.5 px-5">Espèce pêchée</th>
-                  <th className="py-3.5 px-4 text-right">Volume débarqué</th>
-                  <th className="py-3.5 px-5 text-right">Chiffre d’affaires</th>
+                  <th className="py-3.5 px-5">Landed Species</th>
+                  <th className="py-3.5 px-4 text-right">Landed Volume</th>
+                  <th className="py-3.5 px-5 text-right">Total Sales</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#0A4565]/10 dark:divide-[#7DDCEB]/10 text-sm">
@@ -349,10 +349,10 @@ export const ReportsView: React.FC = () => {
                   <tr key={p.species} className="hover:bg-[#16C5C0]/6 transition-colors">
                     <td className="py-3 px-5 font-semibold">{p.species}</td>
                     <td className="py-3 px-4 text-right font-mono tabular-nums">
-                      {p.kg.toLocaleString('fr-FR')} kg
+                      {p.kg.toLocaleString('en-US')} kg
                     </td>
                     <td className="py-3 px-5 text-right font-mono tabular-nums font-bold text-[#16C5C0]">
-                      {p.value.toLocaleString('fr-FR')} €
+                      €{p.value.toLocaleString('en-US')}
                     </td>
                   </tr>
                 ))}
