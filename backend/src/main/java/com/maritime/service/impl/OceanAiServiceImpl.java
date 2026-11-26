@@ -295,8 +295,8 @@ public class OceanAiServiceImpl implements OceanAiService {
             String prompt = """
                     Tu es OceanAI, analyste financier et halieutique de l'armement maritime Bahripay.
                     RÈGLES STRICTES :
-                    1. Réponds en français professionnel, concis et structuré.
-                    2. Distingue TOUJOURS clairement [DONNÉES RÉELLES MYSQL] et [PRÉVISION STATISTIQUE IA].
+                    1. Réponds en anglais professionnel, concis et structuré, et utilise uniquement le DH (Dirham) comme devise.
+                    2. Distingue TOUJOURS clairement [DONNÉES RÉELLES] et [PRÉVISION STATISTIQUE IA].
                     3. N'invente jamais de chiffres absents du contexte ci-dessous.
                     
                     CONTEXTE BASE DE DONNÉES :
@@ -347,21 +347,21 @@ public class OceanAiServiceImpl implements OceanAiService {
         sb.append("- Navires : ").append(kpi.getTotalVessels()).append(" (en mer : ").append(kpi.getVesselsAtSeaCount()).append(")\n");
         sb.append("- Sorties terminées analysables : ").append(analysis.getHistoricalTripsCount()).append("\n");
         sb.append("- Captures cumulées : ").append(kpi.getTotalCatchKg()).append(" kg\n");
-        sb.append("- Recettes réelles : ").append(kpi.getTotalRevenue()).append(" EUR\n");
-        sb.append("- Dépenses réelles : ").append(kpi.getTotalExpenses()).append(" EUR\n");
-        sb.append("- Bénéfice net réel : ").append(kpi.getNetProfit()).append(" EUR\n");
-        sb.append("- Paiements équipage en attente : ").append(kpi.getPendingPaymentsAmount()).append(" EUR (").append(kpi.getPendingPaymentsCount()).append(")\n");
+        sb.append("- Recettes réelles : ").append(kpi.getTotalRevenue()).append(" DH\n");
+        sb.append("- Dépenses réelles : ").append(kpi.getTotalExpenses()).append(" DH\n");
+        sb.append("- Bénéfice net réel : ").append(kpi.getNetProfit()).append(" DH\n");
+        sb.append("- Paiements équipage en attente : ").append(kpi.getPendingPaymentsAmount()).append(" DH (").append(kpi.getPendingPaymentsCount()).append(")\n");
 
         sb.append("Rentabilité par navire :\n");
         for (DashboardDtos.VesselProfitabilityDto vp : analysis.getVesselProfitability()) {
-            sb.append(String.format("  * %s (%s) : CA=%s EUR, Dépenses=%s EUR, Net=%s EUR, Marge=%d%%\n",
+            sb.append(String.format("  * %s (%s) : CA=%s DH, Dépenses=%s DH, Net=%s DH, Marge=%d%%\n",
                     vp.getVesselName(), vp.getHomePort(), vp.getRevenue(), vp.getExpenses(), vp.getNetProfit(), vp.getMarginPercent()));
         }
 
         if (analysis.isSufficientData()) {
             sb.append("\n[PRÉVISION STATISTIQUE IA]\n");
             sb.append("- Captures prévues mois prochain : ").append(analysis.getPredictedNextMonthCatchKg()).append(" kg\n");
-            sb.append("- Chiffre d'affaires prévu mois prochain : ").append(analysis.getPredictedNextMonthRevenue()).append(" EUR\n");
+            sb.append("- Chiffre d'affaires prévu mois prochain : ").append(analysis.getPredictedNextMonthRevenue()).append(" DH\n");
         }
         return sb.toString();
     }
@@ -471,8 +471,8 @@ public class OceanAiServiceImpl implements OceanAiService {
     }
 
     private String formatEuro(BigDecimal amount) {
-        if (amount == null) return "0,00 €";
-        return String.format(Locale.FRANCE, "%,.2f €", amount);
+        if (amount == null) return "0.00 DH";
+        return String.format(Locale.US, "%,.2f DH", amount);
     }
 
     private String capitalize(String s) {

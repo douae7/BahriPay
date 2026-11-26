@@ -589,7 +589,7 @@ export const MaritimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       {
         id: `not-${Date.now()}`,
         title: `New trip ${newTrip.code} recorded`,
-        message: `${vessel?.name || 'Vessel'} — ${tripData.totalCatchKg.toLocaleString('en-US')} kg declared (€${tripData.estimatedRevenue.toLocaleString('en-US')}).`,
+        message: `${vessel?.name || 'Vessel'} — ${tripData.totalCatchKg.toLocaleString('en-US')} kg declared (${tripData.estimatedRevenue.toLocaleString('en-US')} DH).`,
         category: 'trip',
         severity: 'info',
         createdAt: 'Just now',

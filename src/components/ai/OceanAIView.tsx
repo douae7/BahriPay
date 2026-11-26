@@ -180,11 +180,11 @@ export const OceanAIView: React.FC = () => {
         sender: 'assistant',
         timestamp: now,
         content: top
-          ? `Based on recorded sales and operating expenses, "${top.name}" (${top.registration}) is currently the most profitable vessel with a net profit of €${top.net.toLocaleString('en-US')} on €${top.rev.toLocaleString('en-US')} in revenue.`
+          ? `Based on recorded sales and operating expenses, "${top.name}" (${top.registration}) is currently the most profitable vessel with a net profit of ${top.net.toLocaleString('en-US')} DH on ${top.rev.toLocaleString('en-US')} DH in revenue.`
           : 'No vessel data available.',
         highlights: analytics.vesselStats.slice(0, 3).map((v) => ({
           label: v.name,
-          value: `€${v.net.toLocaleString('en-US')} net`,
+          value: `${v.net.toLocaleString('en-US')} DH net`,
         })),
       };
     }
@@ -194,10 +194,10 @@ export const OceanAIView: React.FC = () => {
         id: `ai-${Date.now()}`,
         sender: 'assistant',
         timestamp: now,
-        content: `For the current period, total revenue stands at €${Math.round(kpis.totalRevenue).toLocaleString('en-US')}, averaging €${analytics.avgTripRevenue.toLocaleString('en-US')} per recorded fishing trip.`,
+        content: `For the current period, total revenue stands at ${Math.round(kpis.totalRevenue).toLocaleString('en-US')} DH, averaging ${analytics.avgTripRevenue.toLocaleString('en-US')} DH per recorded fishing trip.`,
         highlights: [
-          { label: 'Monthly Revenue', value: `€${Math.round(kpis.totalRevenue).toLocaleString('en-US')}` },
-          { label: 'Average / Trip', value: `€${analytics.avgTripRevenue.toLocaleString('en-US')}` },
+          { label: 'Monthly Revenue', value: `${Math.round(kpis.totalRevenue).toLocaleString('en-US')} DH` },
+          { label: 'Average / Trip', value: `${analytics.avgTripRevenue.toLocaleString('en-US')} DH` },
         ],
       };
     }
@@ -209,13 +209,13 @@ export const OceanAIView: React.FC = () => {
         sender: 'assistant',
         timestamp: now,
         content: bt
-          ? `The highest-performing trip is ${bt.code} (${bt.vessel || 'Vessel'}), generating €${bt.net.toLocaleString('en-US')} in net profit after deducting €${bt.exp.toLocaleString('en-US')} in trip expenses.`
+          ? `The highest-performing trip is ${bt.code} (${bt.vessel || 'Vessel'}), generating ${bt.net.toLocaleString('en-US')} DH in net profit after deducting ${bt.exp.toLocaleString('en-US')} DH in trip expenses.`
           : 'No trips recorded.',
         highlights: bt
           ? [
               { label: 'Trip', value: bt.code },
-              { label: 'Gross Revenue', value: `€${bt.rev.toLocaleString('en-US')}` },
-              { label: 'Net Profit', value: `€${bt.net.toLocaleString('en-US')}` },
+              { label: 'Gross Revenue', value: `${bt.rev.toLocaleString('en-US')} DH` },
+              { label: 'Net Profit', value: `${bt.net.toLocaleString('en-US')} DH` },
             ]
           : undefined,
       };
@@ -228,9 +228,9 @@ export const OceanAIView: React.FC = () => {
         id: `ai-${Date.now()}`,
         sender: 'assistant',
         timestamp: now,
-        content: `Based on available operational history, Ocean AI projects next month’s revenue at approximately €${estRev.toLocaleString('en-US')} for a total catch volume near ${estKg.toLocaleString('en-US')} kg.`,
+        content: `Based on available operational history, Ocean AI projects next month’s revenue at approximately ${estRev.toLocaleString('en-US')} DH for a total catch volume near ${estKg.toLocaleString('en-US')} kg.`,
         highlights: [
-          { label: 'Estimated Revenue (Forecast)', value: `€${estRev.toLocaleString('en-US')}` },
+          { label: 'Estimated Revenue (Forecast)', value: `${estRev.toLocaleString('en-US')} DH` },
           { label: 'Projected Catch', value: `${estKg.toLocaleString('en-US')} kg` },
         ],
       };
@@ -244,10 +244,10 @@ export const OceanAIView: React.FC = () => {
         id: `ai-${Date.now()}`,
         sender: 'assistant',
         timestamp: now,
-        content: `Your top expense category is "${topExp.category}" at €${topExp.total.toLocaleString('en-US')} (${pct}% of total expenses). Optimizing transit cruising speeds and bulk refueling could save an estimated 6–9% on this line item.`,
+        content: `Your top expense category is "${topExp.category}" at ${topExp.total.toLocaleString('en-US')} DH (${pct}% of total expenses). Optimizing transit cruising speeds and bulk refueling could save an estimated 6–9% on this line item.`,
         highlights: analytics.expenseTotals.slice(0, 3).map((e) => ({
           label: e.category,
-          value: `€${e.total.toLocaleString('en-US')}`,
+          value: `${e.total.toLocaleString('en-US')} DH`,
         })),
       };
     }
@@ -256,9 +256,9 @@ export const OceanAIView: React.FC = () => {
       id: `ai-${Date.now()}`,
       sender: 'assistant',
       timestamp: now,
-      content: `Fleet-wide summary (${vessels.length} vessels, ${trips.length} trips): cumulative revenue of €${Math.round(kpis.totalRevenue).toLocaleString('en-US')} and net profit of €${Math.round(kpis.netProfit).toLocaleString('en-US')}. Choose a suggested prompt for a deeper breakdown.`,
+      content: `Fleet-wide summary (${vessels.length} vessels, ${trips.length} trips): cumulative revenue of ${Math.round(kpis.totalRevenue).toLocaleString('en-US')} DH and net profit of ${Math.round(kpis.netProfit).toLocaleString('en-US')} DH. Choose a suggested prompt for a deeper breakdown.`,
       highlights: [
-        { label: 'Net Profit', value: `€${Math.round(kpis.netProfit).toLocaleString('en-US')}` },
+        { label: 'Net Profit', value: `${Math.round(kpis.netProfit).toLocaleString('en-US')} DH` },
         { label: 'Total Volume', value: `${kpis.totalCatchKg.toLocaleString('en-US')} kg` },
       ],
     };
@@ -466,7 +466,7 @@ export const OceanAIView: React.FC = () => {
                   />
                   <Tooltip
                     formatter={(v, name) => [
-                      `€${Number(v ?? 0).toLocaleString('en-US')}`,
+                      `${Number(v ?? 0).toLocaleString('en-US')} DH`,
                       name === 'historique' ? 'Historical' : 'Forecast',
                     ]}
                     contentStyle={{
@@ -521,7 +521,7 @@ export const OceanAIView: React.FC = () => {
                       tickFormatter={(v) => `${Math.round(v / 1000)}k`}
                     />
                     <Tooltip
-                      formatter={(v) => [`€${Number(v ?? 0).toLocaleString('en-US')}`, 'Net Profit']}
+                      formatter={(v) => [`${Number(v ?? 0).toLocaleString('en-US')} DH`, 'Net Profit']}
                       contentStyle={{
                         backgroundColor: theme === 'dark' ? '#062B45' : '#FFFFFF',
                         borderColor: 'rgba(22,197,192,0.35)',

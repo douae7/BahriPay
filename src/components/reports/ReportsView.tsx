@@ -49,7 +49,7 @@ export const ReportsView: React.FC = () => {
 
     if (reportType === 'financial') {
       filename = 'bahripay_financial_report.csv';
-      headers = ['Month', 'Revenue (€)', 'Expenses (€)', 'Net Profit (€)', 'Catch (kg)'];
+      headers = ['Month', 'Revenue (DH)', 'Expenses (DH)', 'Net Profit (DH)', 'Catch (kg)'];
       rows = monthlySeries.map((m) => [
         m.month,
         String(m.recettes),
@@ -59,7 +59,7 @@ export const ReportsView: React.FC = () => {
       ]);
     } else if (reportType === 'trips') {
       filename = 'bahripay_trips_report.csv';
-      headers = ['Code', 'Vessel', 'Zone', 'Departure', 'Status', 'Catch (kg)', 'Revenue (€)'];
+      headers = ['Code', 'Vessel', 'Zone', 'Departure', 'Status', 'Catch (kg)', 'Revenue (DH)'];
       rows = filteredTrips.map((t) => [
         t.code,
         vessels.find((v) => v.id === t.vesselId)?.name || '',
@@ -71,7 +71,7 @@ export const ReportsView: React.FC = () => {
       ]);
     } else if (reportType === 'sailors') {
       filename = 'bahripay_crew_report.csv';
-      headers = ['ID', 'Name', 'Grade', 'Contract', 'Port', 'Status', 'Total Shares (€)'];
+      headers = ['ID', 'Name', 'Grade', 'Contract', 'Port', 'Status', 'Total Shares (DH)'];
       rows = sailors.map((s) => {
         const totalPaid = payments
           .filter((p) => p.sailorId === s.id)
@@ -88,7 +88,7 @@ export const ReportsView: React.FC = () => {
       });
     } else {
       filename = 'bahripay_production_stats.csv';
-      headers = ['Species', 'Volume (kg)', 'Total Sales (€)'];
+      headers = ['Species', 'Volume (kg)', 'Total Sales (DH)'];
       rows = productionBySpecies.map((p) => [p.species, String(p.kg), String(p.value)]);
     }
 
@@ -223,7 +223,7 @@ export const ReportsView: React.FC = () => {
                 tickFormatter={(v) => `${Math.round(v / 1000)}k`}
               />
               <Tooltip
-                formatter={(v) => [`€${Number(v ?? 0).toLocaleString('en-US')}`]}
+                formatter={(v) => [`${Number(v ?? 0).toLocaleString('en-US')} DH`]}
                 contentStyle={{
                   backgroundColor: theme === 'dark' ? '#062B45' : '#FFFFFF',
                   borderColor: 'rgba(22,197,192,0.35)',
@@ -256,10 +256,10 @@ export const ReportsView: React.FC = () => {
                 {monthlySeries.map((m) => (
                   <tr key={m.month} className="hover:bg-[#16C5C0]/6 transition-colors">
                     <td className="py-3 px-5 font-sans font-semibold">{m.month}</td>
-                    <td className="py-3 px-4 text-right">€{m.recettes.toLocaleString('en-US')}</td>
-                    <td className="py-3 px-4 text-right">€{m.depenses.toLocaleString('en-US')}</td>
+                    <td className="py-3 px-4 text-right">{m.recettes.toLocaleString('en-US')} DH</td>
+                    <td className="py-3 px-4 text-right">{m.depenses.toLocaleString('en-US')} DH</td>
                     <td className="py-3 px-4 text-right font-bold text-[#16C5C0]">
-                      €{m.benefice.toLocaleString('en-US')}
+                      {m.benefice.toLocaleString('en-US')} DH
                     </td>
                     <td className="py-3 px-5 text-right">{m.captureKg.toLocaleString('en-US')} kg</td>
                   </tr>
@@ -293,7 +293,7 @@ export const ReportsView: React.FC = () => {
                       {t.totalCatchKg.toLocaleString('en-US')} kg
                     </td>
                     <td className="py-3 px-5 text-right font-mono tabular-nums font-bold">
-                      €{t.estimatedRevenue.toLocaleString('en-US')}
+                      {t.estimatedRevenue.toLocaleString('en-US')} DH
                     </td>
                   </tr>
                 ))}
@@ -326,7 +326,7 @@ export const ReportsView: React.FC = () => {
                       <td className="py-3 px-4 text-xs">{s.contractType}</td>
                       <td className="py-3 px-4 text-xs">{s.portAttache}</td>
                       <td className="py-3 px-5 text-right font-mono tabular-nums font-bold">
-                        €{Math.round(total).toLocaleString('en-US')}
+                        {Math.round(total).toLocaleString('en-US')} DH
                       </td>
                     </tr>
                   );
@@ -352,7 +352,7 @@ export const ReportsView: React.FC = () => {
                       {p.kg.toLocaleString('en-US')} kg
                     </td>
                     <td className="py-3 px-5 text-right font-mono tabular-nums font-bold text-[#16C5C0]">
-                      €{p.value.toLocaleString('en-US')}
+                      {p.value.toLocaleString('en-US')} DH
                     </td>
                   </tr>
                 ))}

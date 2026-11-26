@@ -35,8 +35,8 @@ import {
   MagneticButton,
 } from '../common/OceanMotion';
 
-const formatEuro = (val: number) =>
-  `€${Math.round(val).toLocaleString('en-US')}`;
+const formatDh = (val: number) =>
+  `${Math.round(val).toLocaleString('en-US')} DH`;
 
 export const DashboardView: React.FC = () => {
   const {
@@ -155,8 +155,8 @@ export const DashboardView: React.FC = () => {
     {
       label: 'Total Revenue',
       numericValue: kpis.totalRevenue,
-      prefix: '€',
-      suffix: '',
+      prefix: '',
+      suffix: ' DH',
       sub: 'Auction & wholesale sales',
       icon: TrendingUp,
       route: 'finances' as const,
@@ -165,8 +165,8 @@ export const DashboardView: React.FC = () => {
     {
       label: 'Total Expenses',
       numericValue: kpis.totalExpenses,
-      prefix: '€',
-      suffix: '',
+      prefix: '',
+      suffix: ' DH',
       sub: 'Fuel, ice, maintenance',
       icon: Anchor,
       route: 'finances' as const,
@@ -174,8 +174,8 @@ export const DashboardView: React.FC = () => {
     {
       label: 'Net Profit',
       numericValue: kpis.netProfit,
-      prefix: '€',
-      suffix: '',
+      prefix: '',
+      suffix: ' DH',
       sub: `Net margin ${marginPct}%`,
       icon: Wallet,
       route: 'finances' as const,
@@ -184,8 +184,8 @@ export const DashboardView: React.FC = () => {
     {
       label: 'Pending Payments',
       numericValue: kpis.pendingPaymentsAmount,
-      prefix: '€',
-      suffix: '',
+      prefix: '',
+      suffix: ' DH',
       sub: `${kpis.pendingPaymentsCount} slips to settle`,
       icon: Clock,
       route: 'finances' as const,
@@ -298,7 +298,7 @@ export const DashboardView: React.FC = () => {
       <section className="dashboard-float-panel grid grid-cols-1 md:grid-cols-3 gap-4">
         <FloatingCircularStat
           label="Fleet Net Margin"
-          valueText={formatEuro(kpis.netProfit)}
+          valueText={formatDh(kpis.netProfit)}
           percent={marginPct}
           sublabel="On auction revenue"
           floatDelay="0s"
@@ -421,7 +421,7 @@ export const DashboardView: React.FC = () => {
                     fontSize: '12px',
                   }}
                   formatter={(value, name) => [
-                    `€${Number(value ?? 0).toLocaleString('en-US')}`,
+                    `${Number(value ?? 0).toLocaleString('en-US')} DH`,
                     name === 'recettes' ? 'Revenue' : 'Expenses',
                   ]}
                 />
@@ -506,7 +506,7 @@ export const DashboardView: React.FC = () => {
                 <div className="flex items-center justify-between text-xs sm:text-sm">
                   <span className="font-medium truncate">{vessel.name}</span>
                   <span className="font-mono tabular-nums font-semibold text-[#0A4565] dark:text-[#7DDCEB]">
-                    {formatEuro(net)}
+                    {formatDh(net)}
                   </span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-[#0A4565]/10 dark:bg-[#7DDCEB]/15 overflow-hidden">
@@ -520,7 +520,7 @@ export const DashboardView: React.FC = () => {
                 <div className="flex items-center justify-between text-[11px] text-[#0A4565]/65 dark:text-[#F8FAFC]/60">
                   <span>{vessel.homePort} · {vessel.status}</span>
                   <span className="font-mono tabular-nums">
-                    Rev {formatEuro(rev)} · Margin {margin}%
+                    Rev {formatDh(rev)} · Margin {margin}%
                   </span>
                 </div>
               </div>
@@ -556,7 +556,7 @@ export const DashboardView: React.FC = () => {
                     </div>
                   </div>
                   <div className="text-right shrink-0 font-mono tabular-nums">
-                    <div className="text-sm font-semibold">{formatEuro(trip.estimatedRevenue)}</div>
+                    <div className="text-sm font-semibold">{formatDh(trip.estimatedRevenue)}</div>
                     <div className="text-xs text-[#0A4565]/65 dark:text-[#7DDCEB]/75">
                       {trip.totalCatchKg.toLocaleString('en-US')} kg
                     </div>

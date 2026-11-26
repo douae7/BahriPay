@@ -255,7 +255,7 @@ export const FleetAndTripsView: React.FC = () => {
 
                     <div className="text-right font-mono tabular-nums">
                       <div className="text-lg font-bold text-[#0A4565] dark:text-[#16C5C0]">
-                        €{trip.estimatedRevenue.toLocaleString('en-US')}
+                        {trip.estimatedRevenue.toLocaleString('en-US')} DH
                       </div>
                       <div className="text-xs text-[#0A4565]/65 dark:text-[#7DDCEB]/75">
                         {trip.totalCatchKg.toLocaleString('en-US')} kg
@@ -274,8 +274,8 @@ export const FleetAndTripsView: React.FC = () => {
                           {c.species}
                         </span>
                         <span className="font-mono tabular-nums">
-                          {c.quantityKg.toLocaleString('en-US')} kg × €{c.pricePerKg.toFixed(2)} ={' '}
-                          <strong>€{c.totalValue.toLocaleString('en-US')}</strong>
+                          {c.quantityKg.toLocaleString('en-US')} kg × {c.pricePerKg.toFixed(2)} DH ={' '}
+                          <strong>{c.totalValue.toLocaleString('en-US')} DH</strong>
                         </span>
                       </div>
                     ))}
@@ -436,7 +436,7 @@ export const FleetAndTripsView: React.FC = () => {
                 >
                   <span>{c.species}</span>
                   <span className="font-mono tabular-nums">
-                    {c.quantityKg} kg · €{c.totalValue.toLocaleString('en-US')}
+                    {c.quantityKg} kg · {c.totalValue.toLocaleString('en-US')} DH
                   </span>
                 </div>
               ))}
@@ -623,7 +623,7 @@ export const FleetAndTripsView: React.FC = () => {
                       type="number"
                       step="0.1"
                       min={0.5}
-                      placeholder="€/kg"
+                      placeholder="DH/kg"
                       value={c.pricePerKg}
                       onChange={(e) =>
                         setCatches((prev) =>
@@ -648,7 +648,7 @@ export const FleetAndTripsView: React.FC = () => {
               <div className="mt-3 p-3 rounded-xl bg-[#16C5C0]/12 flex items-center justify-between text-xs sm:text-sm font-mono tabular-nums">
                 <span>Total Catch: {tripPreviewTotals.kg.toLocaleString('en-US')} kg</span>
                 <span className="font-bold text-[#0A4565] dark:text-[#16C5C0]">
-                  Estimated Revenue: €{tripPreviewTotals.rev.toLocaleString('en-US')}
+                  Estimated Revenue: {tripPreviewTotals.rev.toLocaleString('en-US')} DH
                 </span>
               </div>
             </div>

@@ -585,7 +585,7 @@ export const SailorsView: React.FC = () => {
                         <div className="text-right font-mono tabular-nums">
                           {pay ? (
                             <>
-                              <div className="font-bold">€{pay.amountDue.toLocaleString('en-US')}</div>
+                              <div className="font-bold">{pay.amountDue.toLocaleString('en-US')} DH</div>
                               <div
                                 className={
                                   pay.status === 'Paid' ? 'text-emerald-500' : 'text-amber-500'

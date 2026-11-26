@@ -83,7 +83,7 @@ public class FinanceServiceImpl implements FinanceService {
         if (totalAmount.compareTo(new BigDecimal("15000.00")) >= 0) {
             notificationService.createAlert(
                     "Vente majeure enregistrée",
-                    String.format("Lot de %s (%s kg) vendu à %s pour %.2f €.",
+                    String.format("Lot de %s (%s kg) vendu à %s pour %.2f DH.",
                             espece.getName(), saved.getQuantityKg(), saved.getBuyer(), saved.getTotalAmount()),
                     NotificationCategory.FINANCE,
                     NotificationSeverity.SUCCESS,
@@ -137,7 +137,7 @@ public class FinanceServiceImpl implements FinanceService {
         if (saved.getAmount().compareTo(new BigDecimal("5000.00")) >= 0) {
             notificationService.createAlert(
                     "Dépense importante enregistrée",
-                    String.format("%s sur %s : %.2f € (%s).",
+                    String.format("%s sur %s : %.2f DH (%s).",
                             saved.getCategory().getLabel(), bateau.getName(), saved.getAmount(), saved.getDescription()),
                     NotificationCategory.FINANCE,
                     NotificationSeverity.WARNING,
@@ -323,7 +323,7 @@ public class FinanceServiceImpl implements FinanceService {
 
         notificationService.createAlert(
                 "Paiements générés — " + sortie.getCode(),
-                String.format("%d fiches de paie générées pour un total équipage de %.2f €.",
+                String.format("%d fiches de paie générées pour un total équipage de %.2f DH.",
                         createdPayments.size(), crewPoolAmount),
                 NotificationCategory.PAIEMENT,
                 NotificationSeverity.SUCCESS,

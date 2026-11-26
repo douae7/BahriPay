@@ -670,7 +670,7 @@ export const INITIAL_NOTIFICATIONS: AppNotification[] = [
   {
     id: 'not-1',
     title: '3 crew payments pending',
-    message: 'A total amount of €28,865 awaits approval for trips MAR-114, 115, and 116.',
+    message: 'A total amount of 28,865 DH awaits approval for trips MAR-114, 115, and 116.',
     category: 'payment',
     severity: 'urgent',
     createdAt: '18 mins ago',

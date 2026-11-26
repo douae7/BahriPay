@@ -238,7 +238,7 @@ public class FlotteServiceImpl implements FlotteService {
 
         notificationService.createAlert(
                 "Nouvelle sortie " + saved.getCode() + " enregistrée",
-                bateau.getName() + " — " + saved.getTotalCatchKg() + " kg déclarés (" + saved.getEstimatedRevenue() + " €).",
+                bateau.getName() + " — " + saved.getTotalCatchKg() + " kg déclarés (" + saved.getEstimatedRevenue() + " DH).",
                 NotificationCategory.SORTIE,
                 NotificationSeverity.INFO,
                 "fleet"

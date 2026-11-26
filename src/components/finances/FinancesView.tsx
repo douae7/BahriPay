@@ -175,7 +175,7 @@ export const FinancesView: React.FC = () => {
           <FloatingGlassCard className="p-5" delay={0.04}>
             <div className="text-xs text-[#0A4565]/70 dark:text-[#7DDCEB]/75">Total Revenue</div>
             <div className="mt-2 text-xl sm:text-2xl font-bold text-[#0A4565] dark:text-[#16C5C0]">
-              <AnimatedNumber value={Math.round(kpis.totalRevenue)} prefix="€" />
+              <AnimatedNumber value={Math.round(kpis.totalRevenue)} suffix=" DH" />
             </div>
             <div className="text-[11px] opacity-70 mt-1">{sales.length} auction sales</div>
           </FloatingGlassCard>
@@ -183,7 +183,7 @@ export const FinancesView: React.FC = () => {
           <FloatingGlassCard className="p-5" delay={0.08}>
             <div className="text-xs text-[#0A4565]/70 dark:text-[#7DDCEB]/75">Total Expenses</div>
             <div className="mt-2 text-xl sm:text-2xl font-bold text-[#062B45] dark:text-[#F8FAFC]">
-              <AnimatedNumber value={Math.round(kpis.totalExpenses)} prefix="€" />
+              <AnimatedNumber value={Math.round(kpis.totalExpenses)} suffix=" DH" />
             </div>
             <div className="text-[11px] opacity-70 mt-1">{expenses.length} entries</div>
           </FloatingGlassCard>
@@ -191,7 +191,7 @@ export const FinancesView: React.FC = () => {
           <FloatingGlassCard className="p-5" delay={0.12}>
             <div className="text-xs text-[#0A4565]/70 dark:text-[#7DDCEB]/75">Net Profit</div>
             <div className="mt-2 text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-              <AnimatedNumber value={Math.round(kpis.netProfit)} prefix="€" />
+              <AnimatedNumber value={Math.round(kpis.netProfit)} suffix=" DH" />
             </div>
             <div className="text-[11px] opacity-70 mt-1">Fleet operating result</div>
           </FloatingGlassCard>
@@ -199,7 +199,7 @@ export const FinancesView: React.FC = () => {
           <FloatingGlassCard className="p-5" delay={0.16}>
             <div className="text-xs text-[#0A4565]/70 dark:text-[#7DDCEB]/75">Due to Crew</div>
             <div className="mt-2 text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400">
-              <AnimatedNumber value={Math.round(kpis.pendingPaymentsAmount)} prefix="€" />
+              <AnimatedNumber value={Math.round(kpis.pendingPaymentsAmount)} suffix=" DH" />
             </div>
             <div className="text-[11px] opacity-70 mt-1">
               {kpis.pendingPaymentsCount} slips pending
@@ -231,7 +231,7 @@ export const FinancesView: React.FC = () => {
                   width={90}
                 />
                 <Tooltip
-                  formatter={(v) => [`€${Number(v ?? 0).toLocaleString('en-US')}`, 'Amount']}
+                  formatter={(v) => [`${Number(v ?? 0).toLocaleString('en-US')} DH`, 'Amount']}
                   contentStyle={{
                     backgroundColor: theme === 'dark' ? '#062B45' : '#FFFFFF',
                     borderColor: 'rgba(22,197,192,0.35)',
@@ -397,16 +397,16 @@ export const FinancesView: React.FC = () => {
                         </td>
                         <td className="py-3.5 px-4 text-xs font-mono">{pay.periodLabel}</td>
                         <td className="py-3.5 px-4 text-xs font-mono tabular-nums">
-                          €{pay.netDistributable.toLocaleString('en-US')}
+                          {pay.netDistributable.toLocaleString('en-US')} DH
                           <div className="text-[11px] opacity-65">
-                            Pool €{Math.round(pay.crewPoolAmount).toLocaleString('en-US')}
+                            Pool {Math.round(pay.crewPoolAmount).toLocaleString('en-US')} DH
                           </div>
                         </td>
                         <td className="py-3.5 px-4 text-xs font-mono tabular-nums">
                           {pay.sailorWeight} / {pay.totalCrewWeights} shares
                         </td>
                         <td className="py-3.5 px-4 text-right font-mono tabular-nums font-bold">
-                          €{pay.amountDue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          {pay.amountDue.toLocaleString('en-US', { minimumFractionDigits: 2 })} DH
                         </td>
                         <td className="py-3.5 px-4 text-xs font-semibold">
                           {pay.status === 'Paid' ? (
@@ -473,10 +473,10 @@ export const FinancesView: React.FC = () => {
                       {s.quantityKg.toLocaleString('en-US')} kg
                     </td>
                     <td className="py-3 px-4 text-right font-mono tabular-nums">
-                      €{s.pricePerKg.toFixed(2)}
+                      {s.pricePerKg.toFixed(2)} DH
                     </td>
                     <td className="py-3 px-5 text-right font-mono tabular-nums font-bold text-[#0A4565] dark:text-[#16C5C0]">
-                      €{s.totalAmount.toLocaleString('en-US')}
+                      {s.totalAmount.toLocaleString('en-US')} DH
                     </td>
                   </tr>
                 ))}
@@ -510,7 +510,7 @@ export const FinancesView: React.FC = () => {
                       <td className="py-3 px-4 text-xs">{vessel?.name || 'Fleet'}</td>
                       <td className="py-3 px-4 text-xs opacity-85">{exp.description}</td>
                       <td className="py-3 px-5 text-right font-mono tabular-nums font-bold">
-                        €{exp.amount.toLocaleString('en-US')}
+                        {exp.amount.toLocaleString('en-US')} DH
                       </td>
                     </tr>
                   );
@@ -568,25 +568,25 @@ export const FinancesView: React.FC = () => {
                 <div className="flex justify-between">
                   <span className="opacity-75">Gross trip revenue</span>
                   <span className="font-mono tabular-nums">
-                    €{selectedSlip.grossTripRevenue.toLocaleString('en-US')}
+                    {selectedSlip.grossTripRevenue.toLocaleString('en-US')} DH
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="opacity-75">Common expenses deducted (fuel, ice, provisions)</span>
                   <span className="font-mono tabular-nums text-red-500">
-                    - €{selectedSlip.commonExpenses.toLocaleString('en-US')}
+                    - {selectedSlip.commonExpenses.toLocaleString('en-US')} DH
                   </span>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-[#0A4565]/10 dark:border-[#7DDCEB]/10 font-semibold">
                   <span>Net distributable pool</span>
                   <span className="font-mono tabular-nums">
-                    €{selectedSlip.netDistributable.toLocaleString('en-US')}
+                    {selectedSlip.netDistributable.toLocaleString('en-US')} DH
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="opacity-75">Crew pool ({shareRule.crewSharePercent}%)</span>
                   <span className="font-mono tabular-nums">
-                    €{selectedSlip.crewPoolAmount.toLocaleString('en-US')}
+                    {selectedSlip.crewPoolAmount.toLocaleString('en-US')} DH
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -598,7 +598,7 @@ export const FinancesView: React.FC = () => {
                 <div className="flex justify-between items-center pt-3 border-t border-[#0A4565]/15 dark:border-[#7DDCEB]/20 text-base font-bold">
                   <span>Net payable to crew member</span>
                   <span className="font-mono tabular-nums text-xl text-[#16C5C0]">
-                    €{selectedSlip.amountDue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    {selectedSlip.amountDue.toLocaleString('en-US', { minimumFractionDigits: 2 })} DH
                   </span>
                 </div>
               </div>
@@ -705,7 +705,7 @@ export const FinancesView: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold mb-1">Price / kg (€)</label>
+                    <label className="block text-xs font-semibold mb-1">Price / kg (DH)</label>
                     <input
                       type="number"
                       step="0.1"
@@ -718,7 +718,7 @@ export const FinancesView: React.FC = () => {
                 </div>
                 <div className="p-3 rounded-xl bg-[#16C5C0]/12 text-xs font-mono flex justify-between">
                   <span>Automatically calculated revenue</span>
-                  <strong>€{(saleQty * salePrice).toLocaleString('en-US')}</strong>
+                  <strong>{(saleQty * salePrice).toLocaleString('en-US')} DH</strong>
                 </div>
               </div>
               <div className="flex justify-end gap-2 pt-2">
@@ -813,7 +813,7 @@ export const FinancesView: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1">Amount (€)</label>
+                  <label className="block text-xs font-semibold mb-1">Amount (DH)</label>
                   <input
                     type="number"
                     min={1}

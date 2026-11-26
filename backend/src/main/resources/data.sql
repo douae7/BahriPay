@@ -157,7 +157,7 @@ INSERT IGNORE INTO fiches_paiement (id, reference_number, paiement_id, generated
 (6, 'FCH-2026-0006', 6, NOW(), 45.00, 55.00, 1, '{"trip":"MAR-2026-116","share":"2.0/3.0","net":9335.33}', 'Bahripay Armement', 'En attente de validation');
 
 INSERT IGNORE INTO notifications (id, title, message, category, severity, created_at, is_read, target_page) VALUES
-(1, '3 paiements équipage en attente', 'Un montant total de 28 865,83 € reste à valider pour les marées MAR-2026-114, 115 et 116.', 'PAIEMENT', 'URGENT', NOW(), 0, 'finances'),
+(1, '3 paiements équipage en attente', 'Un montant total de 28 865,83 DH reste à valider pour les marées MAR-2026-114, 115 et 116.', 'PAIEMENT', 'URGENT', NOW(), 0, 'finances'),
 (2, 'Contrats CDD arrivant à échéance', 'Les contrats de Loïc Guégan et Thibault Mercier expirent prochainement.', 'CONTRAT', 'WARNING', NOW(), 0, 'sailors'),
 (3, 'Documents administratifs manquants', '2 marins ont un document manquant (prévention incendie / visite médicale).', 'DOCUMENT', 'WARNING', NOW(), 0, 'sailors'),
 (4, 'Sortie MAR-2026-118 en mer', 'Brise d’Armor a appareillé vers le Banc de Guérande avec 2 membres d’équipage.', 'SORTIE', 'INFO', NOW(), 1, 'fleet'),
